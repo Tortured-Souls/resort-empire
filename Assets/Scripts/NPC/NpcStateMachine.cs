@@ -5,24 +5,26 @@ namespace ResortEmpire.NPC
 {
     public sealed class NpcStateMachine : MonoBehaviour
     {
-        [SerializeField] private NpcState initialState = NpcState.Idle;
+        [SerializeField] private NpcState initialState = NpcState.AwaitingService;
 
         private NpcState _current;
-        private float _enteredAt;
+        private float _secondsInState;
 
         public event Action<NpcState, NpcState> StateChanged;
 
         public NpcState Current => _current;
 
-        public float SecondsInState => Time.time - _enteredAt;
+        public float SecondsInState => _secondsInState;
 
         private void Awake()
         {
             _current = initialState;
-            _enteredAt = Time.time;
+            _secondsInState = 0f;
         }
 
         public bool Is(NpcState state) => _current == state;
+
+        internal void Tick(float deltaTime) => _secondsInState += deltaTime;
 
         public void SetState(NpcState next)
         {
@@ -30,7 +32,7 @@ namespace ResortEmpire.NPC
 
             NpcState previous = _current;
             _current = next;
-            _enteredAt = Time.time;
+            _secondsInState = 0f;
             StateChanged?.Invoke(previous, next);
         }
     }
