@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ResortEmpire.Audio
@@ -18,11 +19,18 @@ namespace ResortEmpire.Audio
             set => PlayerPrefs.SetFloat(SoundVolumeKey, Mathf.Clamp01(value));
         }
 
+        /// <summary>Raised after <see cref="MusicVolume"/> changes, so playing music can follow it live.</summary>
+        public static event Action MusicVolumeChanged;
+
         /// <summary>Background music volume.</summary>
         public static float MusicVolume
         {
             get => PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
-            set => PlayerPrefs.SetFloat(MusicVolumeKey, Mathf.Clamp01(value));
+            set
+            {
+                PlayerPrefs.SetFloat(MusicVolumeKey, Mathf.Clamp01(value));
+                MusicVolumeChanged?.Invoke();
+            }
         }
     }
 }
