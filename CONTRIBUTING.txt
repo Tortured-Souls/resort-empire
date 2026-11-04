@@ -27,12 +27,3 @@ gh pr merge --merge --delete-branch # alebo cez web
 git checkout develop
 git pull
 ```
-
-CI (GitHub Actions, .github/workflows/ci.yml):
-
-- každý PR do develop/main spustí kontrolu .meta súborov, Unity testy a build pre Android + Windows
-- hotové buildy sú v PR > Checks > CI > Artifacts
-- Unity joby potrebujú secrets v Settings > Secrets and variables > Actions:
-  UNITY_LICENSE (obsah Unity_lic.ulf), UNITY_EMAIL, UNITY_PASSWORD (alebo UNITY_SERIAL pre Pro)
-  bez nich sa Unity joby preskočia, kontrola .meta beží vždy
-- návod na získanie licencie: https://game.ci/docs/github/activation
