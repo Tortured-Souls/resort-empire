@@ -111,7 +111,7 @@ MonoBehaviour:
   capacity: 2
   level: 1
   capacityPerLevel: 020000000300000004000000i
-  satisfyAmount: 1
+  servedNeed: 1
 --- !u!1 &8773933956241139673
 GameObject:
   m_ObjectHideFlags: 0
