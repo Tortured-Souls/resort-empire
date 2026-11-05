@@ -1,9 +1,21 @@
-use gitflow (https://git-flow.sh/) and gh cli (https://cli.github.com/)
+pouzite (https://git-flow.sh/, git-flow-next) a gh cli (https://cli.github.com/)
 
-start feature:
+branche:
+
+- main: iba releasované verzie
+- develop: predvolený branch, features idú sem cez PR
+- feature/<jira-id>, bugfix/<jira-id>: jeden task, branchuje z develop
+- release/<version>: branchuje z developu na konci šprintu, ide cez release do main
+- hotfix/<version>: urgentný fix na maine, branchuje z main do main
+
+## feature (je to podobné: `git flow bugfix ...`)
+
+start:
 
 ```
-git flow feature start <name>
+git checkout develop
+git pull
+git flow feature start <jira id>
 ```
 
 commit:
@@ -23,7 +35,45 @@ gh pr create --base develop --fill
 merge:
 
 ```
-gh pr merge --merge --delete-branch # alebo cez web
+gh pr merge --merge --delete-branch # alebo cez web
 git checkout develop
 git pull
+```
+
+## release
+
+<major>.<minor>.<patch>, pozrite https://semver.org/
+
+release sa robí na konci šprintu, každý sprint navyšuje iba minor (patch pre bugfixy)
+
+proces (develop musí obsahovať všetko čo ide do releasu):
+
+```
+git checkout main
+git pull
+git checkout develop
+git pull
+git flow release start <version>
+git flow release publish
+```
+
+bugfixy idú do release/<version>, nové features do develop
+
+finish:
+
+```
+git flow release finish <version> --no-ff --push -m "<version>"
+```
+
+--no-ff pre každý release nechá jeden merge commit
+
+### hotfix
+
+```
+git checkout main
+git pull
+git flow hotfix start <version> # next patch version, e.g. 0.2.1
+git add .
+git commit -m "..."
+git flow hotfix finish <version> --no-ff --push -m "<version>"
 ```
