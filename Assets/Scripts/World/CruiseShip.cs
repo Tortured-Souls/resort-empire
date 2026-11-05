@@ -3,9 +3,10 @@ using UnityEngine;
 namespace ResortEmpire.World
 {
     /// <summary>
-    /// The cruise ship that brings each wave of guests to the island. Between waves it waits
+    /// The cruise ship that brings each wave of guests to the island. Between visits it waits
     /// off-screen; <see cref="SailIn"/> brings it bow first to its dock (the position it has in
-    /// the scene) and <see cref="SailAway"/> backs it out the same way. NPCs are spawned at
+    /// the scene), where it waits for the player to start the wave or reject it, and
+    /// <see cref="SailAway"/> backs it out the same way. NPCs are spawned at
     /// <see cref="SpawnPoint"/>, which moves with the ship.
     /// </summary>
     [RequireComponent(typeof(SpriteRenderer))]
@@ -20,7 +21,7 @@ namespace ResortEmpire.World
         }
 
         [SerializeField] private Transform spawnPoint;
-        [Tooltip("Where the ship waits between waves, relative to the dock. Point it straight back from the bow and keep it off-screen.")]
+        [Tooltip("Where the ship waits between visits, relative to the dock. Point it straight back from the bow and keep it off-screen.")]
         [SerializeField] private Vector2 offshoreOffset = new(-10f, -5f);
         [SerializeField, Min(0.1f)] private float sailAwaySeconds = 3f;
         [SerializeField, Min(0f)] private float bobHeight = 0.03f;

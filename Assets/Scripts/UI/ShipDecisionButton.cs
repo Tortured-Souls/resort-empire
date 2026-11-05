@@ -5,13 +5,21 @@ using UnityEngine.UI;
 namespace ResortEmpire.UI
 {
     /// <summary>
-    /// The <c>Start Wave</c> call to action of the island view. It exists only in AWAITING_WAVE:
-    /// during a wave the button is hidden instead of being shown disabled.
+    /// One of the player's choices for the docked cruise ship: <c>Start Wave</c> lets its guests
+    /// disembark, <c>Reject</c> sends it away so the next one sails in. The button exists only in
+    /// AWAITING_WAVE: otherwise it is hidden instead of being shown disabled.
     /// </summary>
     [RequireComponent(typeof(Button))]
-    public sealed class StartWaveButton : MonoBehaviour
+    public sealed class ShipDecisionButton : MonoBehaviour
     {
+        public enum Decision
+        {
+            StartWave,
+            Reject
+        }
+
         [SerializeField] private WaveManager waveManager;
+        [SerializeField] private Decision decision;
 
         private Button _button;
 
@@ -20,11 +28,11 @@ namespace ResortEmpire.UI
             _button = GetComponent<Button>();
             if (waveManager == null)
             {
-                Debug.LogError($"{nameof(StartWaveButton)} has no {nameof(WaveManager)} assigned.", this);
+                Debug.LogError($"{nameof(ShipDecisionButton)} has no {nameof(WaveManager)} assigned.", this);
                 return;
             }
 
-            _button.onClick.AddListener(StartWave);
+            _button.onClick.AddListener(Decide);
             waveManager.StateChanged += OnWaveStateChanged;
             gameObject.SetActive(waveManager.State == WaveState.AwaitingWave);
         }
@@ -32,11 +40,15 @@ namespace ResortEmpire.UI
         private void OnDestroy()
         {
             if (waveManager == null) return;
-            _button.onClick.RemoveListener(StartWave);
+            _button.onClick.RemoveListener(Decide);
             waveManager.StateChanged -= OnWaveStateChanged;
         }
 
-        private void StartWave() => waveManager.StartWave();
+        private void Decide()
+        {
+            if (decision == Decision.StartWave) waveManager.StartWave();
+            else waveManager.RejectShip();
+        }
 
         private void OnWaveStateChanged(WaveState previous, WaveState next)
         {
