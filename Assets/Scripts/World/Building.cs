@@ -7,9 +7,16 @@ namespace ResortEmpire.World
 {
     public class Building : MonoBehaviour
     {
+        public const int MaxLevel = 3;
+
         [SerializeField] private string displayName = "Building";
         [SerializeField] private Transform entrance;
         [SerializeField, Min(1)] private int capacity = 1;
+        [SerializeField, Range(1, MaxLevel)] private int level = 1;
+
+        // Capacity for levels 1..MaxLevel; when empty, capacity is used for every level.
+        [SerializeField] private int[] capacityPerLevel = Array.Empty<int>();
+
         [SerializeField] private NeedType servedNeed = NeedType.Rooms;
         [SerializeField, Min(0.01f)] private float serviceTime = 36f;
         [SerializeField, Range(0.01f, 1f)] private float workerUtilization = 0.33f;
@@ -24,11 +31,17 @@ namespace ResortEmpire.World
 
         public event Action<Building> VisitorsChanged;
 
+        public event Action<Building> LevelChanged;
+
         public string DisplayName => displayName;
 
         public Vector3 EntrancePosition => entrance != null ? entrance.position : transform.position;
 
-        public int Capacity => capacity;
+        public int Level => level;
+
+        public bool CanUpgrade => level < MaxLevel;
+
+        public int Capacity => level <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[level - 1]) : capacity;
 
         public NeedType ServedNeed => servedNeed;
 
@@ -45,7 +58,9 @@ namespace ResortEmpire.World
 
         public int VisitorCount => _visitorCount;
 
-        public bool IsFull => _visitorCount >= capacity;
+        public bool IsFull => _visitorCount >= Capacity;
+
+        public bool HasVisitor(GameObject visitor) => visitor != null && _visitors.Contains(visitor);
 
         public void JoinQueue(GameObject visitor)
         {
@@ -64,7 +79,7 @@ namespace ResortEmpire.World
             int index = _visitors.IndexOf(visitor);
             if (index < 0) return EntrancePosition;
             if (index < seats.Length && seats[index] != null) return seats[index].position;
-            return EntrancePosition + new Vector3((index - (capacity - 1) * 0.5f) * seatSpacing, 0.35f, 0f);
+            return EntrancePosition + new Vector3((index - (Capacity - 1) * 0.5f) * seatSpacing, 0.35f, 0f);
         }
 
         public bool TryEnter(GameObject visitor)
@@ -94,6 +109,17 @@ namespace ResortEmpire.World
 
             OnVisitorLeft(visitor);
             VisitorsChanged?.Invoke(this);
+        }
+
+        // Raises the level by one; paying for the upgrade is up to the caller.
+        public bool TryUpgrade()
+        {
+            if (!CanUpgrade) return false;
+
+            level++;
+            LevelChanged?.Invoke(this);
+            VisitorsChanged?.Invoke(this);
+            return true;
         }
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
