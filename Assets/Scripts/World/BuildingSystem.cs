@@ -9,7 +9,8 @@ namespace ResortEmpire.World
     /// Owns the buildings of the resort: places the starting buildings, unlocks plots after
     /// waves, sells them for coins and keeps the worker count (always one less than buildings).
     /// The wave manager reports progress through <see cref="CompleteWave"/> and
-    /// <see cref="SetAwaitingWave"/>; plots can only be bought while awaiting the next wave.
+    /// <see cref="SetAwaitingWave"/>; plots can only be bought in AWAITING_WAVE, while a cruise
+    /// ship waits at the dock.
     /// </summary>
     public sealed class BuildingSystem : MonoBehaviour
     {
@@ -47,7 +48,7 @@ namespace ResortEmpire.World
         /// <summary>Number of the last completed wave, 0 before the first one.</summary>
         public int CompletedWaves => _completedWaves;
 
-        /// <summary>True between waves (AWAITING_WAVE), the only time plots can be bought.</summary>
+        /// <summary>True in AWAITING_WAVE, the only time plots can be bought.</summary>
         public bool IsAwaitingWave => _awaitingWave;
 
         private void Awake()
