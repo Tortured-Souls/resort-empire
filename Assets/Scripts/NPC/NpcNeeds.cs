@@ -1,69 +1,48 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ResortEmpire.NPC
 {
-    /// <summary>
-    /// Holds the needs of one NPC and decays them every frame. Concrete <see cref="Need"/>
-    /// subclasses are added in the Inspector (serialized by reference) or from code.
-    /// </summary>
+    /// <summary>Ordered service requests carried by a visual guest; no guest satisfaction.</summary>
     public sealed class NpcNeeds : MonoBehaviour
     {
-        [SerializeReference] private List<Need> needs = new();
+        [SerializeField] private List<Need> needs = new()
+        {
+            new Need(NeedType.Rooms),
+            new Need(NeedType.Food)
+        };
 
-        /// <summary>All needs of this NPC.</summary>
+        public event Action<Need> NeedCompleted;
+
         public IReadOnlyList<Need> Needs => needs;
 
-        private void Update()
+        public Need Current
         {
-            float deltaTime = Time.deltaTime;
-            foreach (var need in needs)
+            get
             {
-                need?.Tick(deltaTime);
-            }
-        }
-
-        /// <summary>Adds a need; ignores null and duplicates of the same type.</summary>
-        public void Add(Need need)
-        {
-            if (need == null || TryGet(need.GetType(), out _)) return;
-            needs.Add(need);
-        }
-
-        /// <summary>Returns the need of type <typeparamref name="T"/>, or null if the NPC does not have it.</summary>
-        public T Get<T>() where T : Need
-        {
-            return TryGet(typeof(T), out var need) ? (T)need : null;
-        }
-
-        /// <summary>The least satisfied need, i.e. what the NPC wants most. Null when there are no needs.</summary>
-        public Need MostUrgent()
-        {
-            Need urgent = null;
-            foreach (var need in needs)
-            {
-                if (need != null && (urgent == null || need.Satisfaction < urgent.Satisfaction))
+                foreach (var need in needs)
                 {
-                    urgent = need;
+                    if (!need.IsCompleted) return need;
                 }
-            }
 
-            return urgent;
+                return null;
+            }
         }
 
-        private bool TryGet(System.Type type, out Need found)
+        /// <summary>Configure before starting a visit. Two requests is the default, not a limit.</summary>
+        public void SetNeeds(params NeedType[] types)
         {
-            foreach (var need in needs)
-            {
-                if (need != null && need.GetType() == type)
-                {
-                    found = need;
-                    return true;
-                }
-            }
+            needs.Clear();
+            foreach (var type in types) needs.Add(new Need(type));
+        }
 
-            found = null;
-            return false;
+        internal void CompleteCurrent()
+        {
+            var need = Current;
+            if (need == null) return;
+            need.Complete();
+            NeedCompleted?.Invoke(need);
         }
     }
 }

@@ -2,10 +2,11 @@ namespace ResortEmpire.NPC
 {
     public enum NpcState
     {
-        Idle,
+        AwaitingService,
         WalkingToBuilding,
+        WalkingToSeat,
         Waiting,
         UsingBuilding,
-        Leaving
+        Completed
     }
 }
