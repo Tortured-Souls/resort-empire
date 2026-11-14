@@ -5296,7 +5296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.World.BuildingPlot
   displayName: Pool
-  buildingPrefab: {fileID: 3355400184635415096, guid: 0733c2defd131334ba631d4923306b10, type: 3}
+  buildingPrefab: {fileID: 7679583713480197856, guid: 24a51f5f68138f442b1a55d617651636, type: 3}
   unlockAfterWave: 3
   price: 1200
   ground: {fileID: 1207925687}
