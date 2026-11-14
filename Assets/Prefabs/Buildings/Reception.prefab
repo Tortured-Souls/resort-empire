@@ -111,7 +111,18 @@ MonoBehaviour:
   capacity: 4
   level: 1
   capacityPerLevel: 040000000600000008000000i
+  upgradePrices: 2c01000058020000i
+  serviceTimePerLevel:
+  - 1
+  - 0.85
+  - 0.7
   servedNeed: 0
+  serviceTime: 36
+  workerUtilization: 0.33
+  hasWorker: 0
+  seats: []
+  queueStep: {x: -0.3, y: -0.2}
+  seatSpacing: 0.35
 --- !u!1 &9100591452420839869
 GameObject:
   m_ObjectHideFlags: 0

@@ -27,11 +27,21 @@ namespace ResortEmpire.World
         [SerializeField] private List<BuildingPlot> plots = new();
 
         private readonly List<Building> _buildings = new();
+        private readonly Dictionary<Building, int> _suggestedLevel = new();
         private int _completedWaves;
         private bool _awaitingWave = true;
 
         /// <summary>Raised after a plot was bought and its building placed.</summary>
         public event Action<Building> BuildingPurchased;
+
+        /// <summary>Raised after a building was upgraded and paid for.</summary>
+        public event Action<Building> BuildingUpgraded;
+
+        /// <summary>
+        /// Raised in AWAITING_WAVE when the player can newly afford the next level of a building,
+        /// once per building and level. The upgrade suggestion panel listens to it.
+        /// </summary>
+        public event Action<Building> UpgradeAvailable;
 
         /// <summary>Raised with the new worker count.</summary>
         public event Action<int> WorkersChanged;
@@ -50,6 +60,10 @@ namespace ResortEmpire.World
 
         /// <summary>True in AWAITING_WAVE, the only time plots can be bought.</summary>
         public bool IsAwaitingWave => _awaitingWave;
+
+        /// <summary>True when <paramref name="building"/> can be upgraded right now.</summary>
+        public bool CanUpgrade(Building building) =>
+            building != null && _awaitingWave && building.CanUpgrade && wallet != null && wallet.CanAfford(building.UpgradePrice);
 
         private void Awake()
         {
@@ -97,6 +111,7 @@ namespace ResortEmpire.World
         {
             _awaitingWave = awaiting;
             if (!awaiting && purchasePanel != null) purchasePanel.Hide();
+            if (awaiting) SuggestUpgrades();
         }
 
         /// <summary>Buys <paramref name="plot"/>: pays, places the building and adds a worker.</summary>
@@ -114,6 +129,41 @@ namespace ResortEmpire.World
             return true;
         }
 
+        /// <summary>Upgrades <paramref name="building"/> by one level and pays for it. Only in AWAITING_WAVE.</summary>
+        public bool TryUpgrade(Building building)
+        {
+            if (!CanUpgrade(building) || !_buildings.Contains(building)) return false;
+
+            int price = building.UpgradePrice;
+            if (!wallet.TrySpendCoins(price)) return false;
+            if (!building.TryUpgrade())
+            {
+                wallet.AddCoins(price);
+                return false;
+            }
+
+            BuildingUpgraded?.Invoke(building);
+            Notifications.Show(building.DisplayName, $"Upgraded to level {building.Level}!");
+            return true;
+        }
+
+        // Suggests every upgrade the player can afford, each level only once.
+        private void SuggestUpgrades()
+        {
+            if (!_awaitingWave) return;
+
+            foreach (var building in _buildings)
+            {
+                if (!CanUpgrade(building)) continue;
+                if (_suggestedLevel.TryGetValue(building, out int level) && level >= building.Level) continue;
+
+                _suggestedLevel[building] = building.Level;
+                // Until the upgrade panel (SCRUM-109) listens, a toast tells the player.
+                if (UpgradeAvailable != null) UpgradeAvailable.Invoke(building);
+                else Notifications.Show("Upgrade available!", $"{building.DisplayName}: level {building.Level + 1} for {building.UpgradePrice:N0} coins.");
+            }
+        }
+
         private void OnPlotClicked(BuildingPlot plot)
         {
             if (!_awaitingWave || !plot.IsForSale || purchasePanel == null) return;
@@ -125,7 +175,11 @@ namespace ResortEmpire.World
             if (TryPurchase(plot)) purchasePanel.Hide();
         }
 
-        private void OnBalanceChanged(int balance) => RefreshPlots();
+        private void OnBalanceChanged(int balance)
+        {
+            RefreshPlots();
+            SuggestUpgrades();
+        }
 
         private void RefreshPlots()
         {
