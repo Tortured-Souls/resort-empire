@@ -2608,6 +2608,7 @@ GameObject:
   m_Component:
   - component: {fileID: 744083733}
   - component: {fileID: 744083734}
+  - component: {fileID: 744083735}
   m_Layer: 5
   m_Name: HUD
   m_TagString: Untagged
@@ -2657,9 +2658,23 @@ MonoBehaviour:
   displaySlot: {fileID: 64929048}
   coinIcon: {fileID: 21300000, guid: 031f56dcaf384eeca48284e71ce11e6f, type: 3}
   gemIcon: {fileID: 21300000, guid: 88425be9691d40c882f0d76c385897c8, type: 3}
+  energyIcon: {fileID: 21300000, guid: dcf1330c1d954e5d91d4f4b22a953d64, type: 3}
   counterBackground: {fileID: 21300000, guid: 036cf93ba45d4789a198152039566171, type: 3}
   coins: 0
   coinWallet: {fileID: 2057164495}
+--- !u!114 &744083735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744083732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0a0dd507d16002449fe0bfe741c5a3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.UI.EnergyWallet
+  balance: 0
 --- !u!1 &746571240
 GameObject:
   m_ObjectHideFlags: 0
