@@ -26,6 +26,8 @@ namespace ResortEmpire.UI
         [SerializeField] private Sprite counterBackground;
 
         [SerializeField] private int coins;
+        [Tooltip("Wallet the coin counter shows. Found in the scene when left empty.")]
+        [SerializeField] private CoinWallet coinWallet;
         private Counter coinCounter;
         private Counter gemCounter;
         private GemWallet gemWallet;
@@ -53,7 +55,18 @@ namespace ResortEmpire.UI
             if (coinsSlot != null)
             {
                 coinCounter = CreateCounter(coinsSlot, "CoinCounter", "CoinIcon", coinIcon);
-                SetCoins(coins);
+                if (coinWallet == null)
+                    coinWallet = FindAnyObjectByType<CoinWallet>();
+
+                if (coinWallet != null)
+                {
+                    coinWallet.BalanceChanged += UpdateCoinCount;
+                    UpdateCoinCount(coinWallet.Balance);
+                }
+                else
+                {
+                    SetCount(coinCounter, coins);
+                }
             }
 
             if (gemsSlot != null)
@@ -174,14 +187,32 @@ namespace ResortEmpire.UI
         {
             if (gemWallet != null)
                 gemWallet.BalanceChanged -= UpdateGemCount;
+            if (coinWallet != null)
+                coinWallet.BalanceChanged -= UpdateCoinCount;
         }
 
-        /// <summary>Updates the number displayed in the coin counter.</summary>
+        /// <summary>
+        /// Sets the coin amount. With a <see cref="CoinWallet"/> this sets the wallet balance and
+        /// the counter follows it; without one only the counter changes.
+        /// </summary>
         public void SetCoins(int amount)
         {
             coins = Mathf.Max(0, amount);
-            SetCount(coinCounter, coins);
+            if (coinWallet != null)
+                coinWallet.SetBalance(coins);
+            else
+                SetCount(coinCounter, coins);
         }
+
+        /// <summary>Updates the coin counter when the wallet balance changes (SCRUM-145).</summary>
+        private void UpdateCoinCount(int amount)
+        {
+            coins = amount;
+            SetCount(coinCounter, amount);
+        }
+
+        /// <summary>The wallet the coin counter shows.</summary>
+        public CoinWallet CoinWallet => coinWallet;
 
         /// <summary>Updates the gem counter when the wallet balance changes.</summary>
         private void UpdateGemCount(int amount)
