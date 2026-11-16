@@ -51,6 +51,9 @@ MonoBehaviour:
   - type: 0
     waitingSeconds: 0
     isCompleted: 0
+  - type: 1
+    waitingSeconds: 0
+    isCompleted: 0
   - type: 2
     waitingSeconds: 0
     isCompleted: 0
