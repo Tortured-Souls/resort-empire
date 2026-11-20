@@ -30,10 +30,21 @@ namespace ResortEmpire.NPC
         public float Weight => 1f;
 
         /// <summary>First wave (1-based) in which guests have this need.</summary>
-        public int ActiveFromWave => 1;
+        public int ActiveFromWave => FirstWave(type);
 
         /// <summary>True when guests of <paramref name="wave"/> have this need.</summary>
         public bool IsActiveInWave(int wave) => wave >= ActiveFromWave;
+
+        /// <summary>
+        /// First wave of each need type. Relax comes with the pool (unlocked after wave 3),
+        /// Ocean View with the bungalows (unlocked after wave 6).
+        /// </summary>
+        public static int FirstWave(NeedType type) => type switch
+        {
+            NeedType.Relax => 4,
+            NeedType.OceanView => 7,
+            _ => 1
+        };
 
         internal void Wait(float deltaTime) => waitingSeconds += deltaTime;
         internal void Complete() => isCompleted = true;

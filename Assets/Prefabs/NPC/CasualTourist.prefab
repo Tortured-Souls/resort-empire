@@ -57,6 +57,9 @@ MonoBehaviour:
   - type: 2
     waitingSeconds: 0
     isCompleted: 0
+  - type: 3
+    waitingSeconds: 0
+    isCompleted: 0
 --- !u!114 &7261203402242102448
 MonoBehaviour:
   m_ObjectHideFlags: 0
