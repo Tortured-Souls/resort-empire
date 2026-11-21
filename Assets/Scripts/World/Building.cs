@@ -25,13 +25,23 @@ namespace ResortEmpire.World
         [SerializeField] private Vector2 queueStep = new(-0.3f, -0.2f);
         [SerializeField, Min(0.01f)] private float seatSpacing = 0.35f;
 
+        [Header("Boost")]
+        [SerializeField] private Color boostTint = new(1f, 0.92f, 0.55f, 1f);
+
         private readonly List<GameObject> _visitors = new();
+        private SpriteRenderer _renderer;
+        private Color _baseColor = Color.white;
+        private float _boostTimeLeft;
+        private float _boostServiceMultiplier = 1f;
         private readonly List<GameObject> _queue = new();
         private int _visitorCount;
 
         public event Action<Building> VisitorsChanged;
 
         public event Action<Building> LevelChanged;
+
+        /// <summary>Raised when a boost starts or runs out.</summary>
+        public event Action<Building> BoostChanged;
 
         public string DisplayName => displayName;
 
@@ -46,7 +56,13 @@ namespace ResortEmpire.World
         public NeedType ServedNeed => servedNeed;
 
         /// <summary>Unstaffed seconds per request. Staffing changes the rate, not progress.</summary>
-        public float ServiceDuration => Mathf.Max(0.01f, serviceTime * (hasWorker ? workerUtilization : 1f));
+        public float ServiceDuration => Mathf.Max(0.01f, serviceTime * _boostServiceMultiplier * (hasWorker ? workerUtilization : 1f));
+
+        /// <summary>True while an Energy boost speeds up the service.</summary>
+        public bool IsBoosted => _boostTimeLeft > 0f;
+
+        /// <summary>Seconds left of the running boost, 0 without one.</summary>
+        public float BoostTimeLeft => _boostTimeLeft;
 
         public bool HasWorker
         {
@@ -121,6 +137,41 @@ namespace ResortEmpire.World
             VisitorsChanged?.Invoke(this);
             return true;
         }
+
+        /// <summary>
+        /// Speeds up the service for <paramref name="seconds"/>: service time is multiplied by
+        /// <paramref name="serviceMultiplier"/> (0.5 = twice as fast). Paying is up to the caller.
+        /// </summary>
+        public bool StartBoost(float seconds, float serviceMultiplier)
+        {
+            if (IsBoosted || seconds <= 0f) return false;
+
+            _boostTimeLeft = seconds;
+            _boostServiceMultiplier = Mathf.Clamp(serviceMultiplier, 0.1f, 1f);
+            if (Renderer != null)
+            {
+                _baseColor = Renderer.color;
+                Renderer.color = _baseColor * boostTint;
+            }
+
+            BoostChanged?.Invoke(this);
+            return true;
+        }
+
+        protected virtual void Update()
+        {
+            if (!IsBoosted) return;
+
+            _boostTimeLeft -= Time.deltaTime;
+            if (_boostTimeLeft > 0f) return;
+
+            _boostTimeLeft = 0f;
+            _boostServiceMultiplier = 1f;
+            if (Renderer != null) Renderer.color = _baseColor;
+            BoostChanged?.Invoke(this);
+        }
+
+        private SpriteRenderer Renderer => _renderer != null ? _renderer : _renderer = GetComponent<SpriteRenderer>();
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
 

@@ -2455,7 +2455,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: -2
-      type: {class: , ns: , asm: }
+      type: {class: '', ns: '', asm: ''}
     - rid: 6006241883445264610
       type: {class: Light2DProviderSources, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
       data:
@@ -2832,6 +2832,7 @@ GameObject:
   m_Component:
   - component: {fileID: 779624769}
   - component: {fileID: 779624770}
+  - component: {fileID: 779624771}
   m_Layer: 0
   m_Name: BuildingSystem
   m_TagString: Untagged
@@ -2876,6 +2877,23 @@ MonoBehaviour:
   plots:
   - {fileID: 1745205962}
   - {fileID: 181082117}
+--- !u!114 &779624771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779624768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67be132861d5bcf40a56c5be0308b5ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.World.BoostSystem
+  energyWallet: {fileID: 744083735}
+  waveManager: {fileID: 1177411212}
+  energyCost: 1
+  duration: 15
+  serviceMultiplier: 0.5
 --- !u!1001 &796398022
 PrefabInstance:
   m_ObjectHideFlags: 0
