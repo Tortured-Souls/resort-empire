@@ -141,12 +141,8 @@ MonoBehaviour:
   entrance: {fileID: 3547000188283554281}
   capacity: 3
   level: 1
-  capacityPerLevel: 030000000400000005000000i
-  upgradePrices: 9001000020030000i
-  serviceTimePerLevel:
-  - 1
-  - 0.85
-  - 0.7
+  capacityPerLevel: 030000000500000007000000i
+  upgradePrices: f4010000b0040000i
   servedNeed: 2
   serviceTime: 36
   workerUtilization: 0.33
