@@ -156,8 +156,6 @@ namespace ResortEmpire.World
             return true;
         }
 
-        private int CapacityAt(int lvl) => lvl <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[lvl - 1]) : capacity;
-
         protected virtual void OnVisitorEntered(GameObject visitor) { }
 
         protected virtual void OnVisitorLeft(GameObject visitor) { }
