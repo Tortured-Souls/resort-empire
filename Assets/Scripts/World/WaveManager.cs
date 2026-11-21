@@ -145,13 +145,13 @@ namespace ResortEmpire.World
         }
 
         // WR9: a need whose building is not on the island is never spawned. The guest would wait
-        // for that service forever and the wave could never end.
+        // for that service forever and the wave could never end. Needs of later waves are dropped too.
         private void KeepServedNeeds(NpcNeeds needs)
         {
             _guestNeeds.Clear();
             foreach (var need in needs.Needs)
             {
-                if (_servedNeeds.Contains(need.Type)) _guestNeeds.Add(need.Type);
+                if (_servedNeeds.Contains(need.Type) && need.IsActiveInWave(_wave)) _guestNeeds.Add(need.Type);
             }
 
             if (_guestNeeds.Count < needs.Needs.Count) needs.SetNeeds(_guestNeeds.ToArray());
