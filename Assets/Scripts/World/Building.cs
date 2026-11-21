@@ -17,6 +17,10 @@ namespace ResortEmpire.World
         // Capacity for levels 1..MaxLevel; when empty, capacity is used for every level.
         [SerializeField] private int[] capacityPerLevel = Array.Empty<int>();
 
+        [Header("Upgrade")]
+        [Tooltip("Coins for the next level: [0] is level 1 to 2, [1] is level 2 to 3.")]
+        [SerializeField] private int[] upgradePrices = { 500, 1200 };
+
         [SerializeField] private NeedType servedNeed = NeedType.Rooms;
         [SerializeField, Min(0.01f)] private float serviceTime = 36f;
         [SerializeField, Range(0.01f, 1f)] private float workerUtilization = 0.33f;
@@ -41,7 +45,13 @@ namespace ResortEmpire.World
 
         public bool CanUpgrade => level < MaxLevel;
 
-        public int Capacity => level <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[level - 1]) : capacity;
+        public int Capacity => CapacityAt(level);
+
+        /// <summary>Capacity after the next upgrade; the current one at max level.</summary>
+        public int NextCapacity => CapacityAt(CanUpgrade ? level + 1 : level);
+
+        /// <summary>Coins needed for the next level, 0 at max level.</summary>
+        public int UpgradePrice => CanUpgrade && level - 1 < upgradePrices.Length ? Mathf.Max(0, upgradePrices[level - 1]) : 0;
 
         public NeedType ServedNeed => servedNeed;
 
@@ -121,6 +131,8 @@ namespace ResortEmpire.World
             VisitorsChanged?.Invoke(this);
             return true;
         }
+
+        private int CapacityAt(int lvl) => lvl <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[lvl - 1]) : capacity;
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
 

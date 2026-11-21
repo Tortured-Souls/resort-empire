@@ -110,8 +110,15 @@ MonoBehaviour:
   entrance: {fileID: 593847313700995538}
   capacity: 2
   level: 1
-  capacityPerLevel: 020000000300000004000000i
+  capacityPerLevel: 020000000400000006000000i
+  upgradePrices: f4010000b0040000i
   servedNeed: 1
+  serviceTime: 36
+  workerUtilization: 0.33
+  hasWorker: 0
+  seats: []
+  queueStep: {x: -0.3, y: -0.2}
+  seatSpacing: 0.35
 --- !u!1 &8773933956241139673
 GameObject:
   m_ObjectHideFlags: 0
