@@ -43,7 +43,7 @@ namespace ResortEmpire.World
         [SerializeField] private Color signOutlineColor = new(0.25f, 0.13f, 0.05f, 1f);
         [SerializeField, Range(0f, 0.5f)] private float signOutlineWidth = 0.3f;
         [SerializeField] private Transform marker;
-        [SerializeField] private Color lockedTint = new(0.55f, 0.55f, 0.55f, 1f);
+        [SerializeField] private Color lockedTint = new(0.78f, 0.78f, 0.78f, 1f);
         [SerializeField] private Color notAffordableTint = new(1f, 0.7f, 0.7f, 1f);
         [SerializeField, Min(0f)] private float markerBobHeight = 0.12f;
         [SerializeField, Min(0f)] private float markerBobSpeed = 3f;

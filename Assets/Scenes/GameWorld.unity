@@ -1107,7 +1107,7 @@ MonoBehaviour:
   signBoard: {fileID: 2081550022}
   sign: {fileID: 597995743}
   marker: {fileID: 847557280}
-  lockedTint: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  lockedTint: {r: 0.78, g: 0.78, b: 0.78, a: 1}
   notAffordableTint: {r: 1, g: 0.7, b: 0.7, a: 1}
   markerBobHeight: 0.12
   markerBobSpeed: 3
@@ -5303,7 +5303,7 @@ MonoBehaviour:
   signBoard: {fileID: 2081550012}
   sign: {fileID: 126455672}
   marker: {fileID: 992877235}
-  lockedTint: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  lockedTint: {r: 0.78, g: 0.78, b: 0.78, a: 1}
   notAffordableTint: {r: 1, g: 0.7, b: 0.7, a: 1}
   markerBobHeight: 0.12
   markerBobSpeed: 3
