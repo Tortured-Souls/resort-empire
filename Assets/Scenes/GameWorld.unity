@@ -1236,7 +1236,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -3
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: adf250c6b253a48e5b7420cd2df0208a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1430,10 +1430,6 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 84972ca662a1a4f11966563240b145be, type: 3}
-    - target: {fileID: 785550900734549774, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
-      propertyPath: m_SortingOrder
-      value: -2
-      objectReference: {fileID: 0}
     - target: {fileID: 2175857067855240901, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
       propertyPath: m_Name
       value: PalmTree_4
@@ -1507,10 +1503,6 @@ PrefabInstance:
     - target: {fileID: 155672043214900555, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 785550900734549774, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
-      propertyPath: m_SortingOrder
-      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 2175857067855240901, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
       propertyPath: m_Name
@@ -2495,10 +2487,6 @@ PrefabInstance:
       propertyPath: m_FlipX
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 3200371916081663092, guid: f3f6ad3b816644aceb100457223b9232, type: 3}
-      propertyPath: m_SortingOrder
-      value: -3
-      objectReference: {fileID: 0}
     - target: {fileID: 4878263283445853780, guid: f3f6ad3b816644aceb100457223b9232, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.9
@@ -3087,7 +3075,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 4
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: adf250c6b253a48e5b7420cd2df0208a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3866,7 +3854,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 4
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: adf250c6b253a48e5b7420cd2df0208a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3977,7 +3965,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 5
+  m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 4ed4d22ed24c247549fd3eaca177aa0c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -4649,10 +4637,6 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 84972ca662a1a4f11966563240b145be, type: 3}
-    - target: {fileID: 785550900734549774, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
-      propertyPath: m_SortingOrder
-      value: -2
-      objectReference: {fileID: 0}
     - target: {fileID: 2175857067855240901, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
       propertyPath: m_Name
       value: PalmTree_2
@@ -4692,10 +4676,6 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 689e575540bc44b738825cef5e833821, type: 3}
-    - target: {fileID: 3200371916081663092, guid: f3f6ad3b816644aceb100457223b9232, type: 3}
-      propertyPath: m_SortingOrder
-      value: -3
-      objectReference: {fileID: 0}
     - target: {fileID: 4878263283445853780, guid: f3f6ad3b816644aceb100457223b9232, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.8
@@ -5135,10 +5115,6 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 689e575540bc44b738825cef5e833821, type: 3}
-    - target: {fileID: 3200371916081663092, guid: f3f6ad3b816644aceb100457223b9232, type: 3}
-      propertyPath: m_SortingOrder
-      value: -3
-      objectReference: {fileID: 0}
     - target: {fileID: 4878263283445853780, guid: f3f6ad3b816644aceb100457223b9232, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.85
@@ -6492,10 +6468,6 @@ PrefabInstance:
     - target: {fileID: 785550900734549774, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
       propertyPath: m_FlipX
       value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 785550900734549774, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
-      propertyPath: m_SortingOrder
-      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 2175857067855240901, guid: 0d6df52820ecb4309801aaa6e90ef46a, type: 3}
       propertyPath: m_Name
