@@ -2,12 +2,22 @@ using System;
 using System.Collections.Generic;
 using ResortEmpire.NPC;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace ResortEmpire.World
 {
-    public class Building : MonoBehaviour
+    /// <summary>
+    /// A service building. It seats <see cref="Capacity"/> guests at once and serves each in
+    /// <see cref="ServiceDuration"/>: full speed with a worker, slower without one (build
+    /// document §4.4–4.5). Workers are assigned by <see cref="BuildingSystem"/>; a tap on the
+    /// building raises <see cref="Clicked"/>, so it needs a <see cref="Collider2D"/>.
+    /// </summary>
+    public class Building : MonoBehaviour, IPointerClickHandler
     {
         public const int MaxLevel = 3;
+
+        /// <summary>worker_slots: workers one building takes, the same for every building in the prototype.</summary>
+        public const int WorkerSlots = 1;
 
         [SerializeField] private string displayName = "Building";
         [SerializeField] private Transform entrance;
@@ -18,9 +28,12 @@ namespace ResortEmpire.World
         [SerializeField] private int[] capacityPerLevel = Array.Empty<int>();
 
         [SerializeField] private NeedType servedNeed = NeedType.Rooms;
-        [SerializeField, Min(0.01f)] private float serviceTime = 36f;
-        [SerializeField, Range(0.01f, 1f)] private float workerUtilization = 0.33f;
-        [SerializeField] private bool hasWorker;
+        [Tooltip("service_time: seconds to serve one guest with a worker.")]
+        [SerializeField, Min(0.01f)] private float serviceTime = 12f;
+        [Tooltip("utilization_empty: share of full speed without a worker. Never 0, or a wave could not end (WR2).")]
+        [SerializeField, Range(0.01f, 1f)] private float emptyUtilization = 0.33f;
+        [Tooltip("Worker standing at the building; hidden while nobody works here.")]
+        [SerializeField] private SpriteRenderer workerFigure;
         [SerializeField] private Transform[] seats = Array.Empty<Transform>();
         [SerializeField] private Vector2 queueStep = new(-0.3f, -0.2f);
         [SerializeField, Min(0.01f)] private float seatSpacing = 0.35f;
@@ -28,10 +41,14 @@ namespace ResortEmpire.World
         private readonly List<GameObject> _visitors = new();
         private readonly List<GameObject> _queue = new();
         private int _visitorCount;
+        private bool _hasWorker;
 
         public event Action<Building> VisitorsChanged;
 
         public event Action<Building> LevelChanged;
+
+        /// <summary>Raised when the player taps the building.</summary>
+        public event Action<Building> Clicked;
 
         public string DisplayName => displayName;
 
@@ -45,14 +62,17 @@ namespace ResortEmpire.World
 
         public NeedType ServedNeed => servedNeed;
 
-        /// <summary>Unstaffed seconds per request. Staffing changes the rate, not progress.</summary>
-        public float ServiceDuration => Mathf.Max(0.01f, serviceTime * (hasWorker ? workerUtilization : 1f));
+        /// <summary>utilization: 1 with a worker, <c>utilization_empty</c> without.</summary>
+        public float Utilization => _hasWorker ? 1f : emptyUtilization;
 
-        public bool HasWorker
-        {
-            get => hasWorker;
-            set => hasWorker = value;
-        }
+        /// <summary>
+        /// Seconds to serve one guest at the current <see cref="Utilization"/>. Read it every frame:
+        /// a worker arriving or leaving changes the speed of guests already seated, too.
+        /// </summary>
+        public float ServiceDuration => serviceTime / Utilization;
+
+        /// <summary>True while a worker works here; see <see cref="WorkerSlots"/>.</summary>
+        public bool HasWorker => _hasWorker;
 
         public int QueueCount => _queue.Count;
 
@@ -61,6 +81,8 @@ namespace ResortEmpire.World
         public bool IsFull => _visitorCount >= Capacity;
 
         public bool HasVisitor(GameObject visitor) => visitor != null && _visitors.Contains(visitor);
+
+        private void Awake() => ApplyWorkerFigure();
 
         public void JoinQueue(GameObject visitor)
         {
@@ -120,6 +142,23 @@ namespace ResortEmpire.World
             LevelChanged?.Invoke(this);
             VisitorsChanged?.Invoke(this);
             return true;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Left) Clicked?.Invoke(this);
+        }
+
+        // Only BuildingSystem staffs buildings; it keeps one worker fewer than buildings.
+        internal void SetWorker(bool hasWorker)
+        {
+            _hasWorker = hasWorker;
+            ApplyWorkerFigure();
+        }
+
+        private void ApplyWorkerFigure()
+        {
+            if (workerFigure != null) workerFigure.enabled = _hasWorker;
         }
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
