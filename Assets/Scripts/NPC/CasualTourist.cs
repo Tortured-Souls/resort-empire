@@ -34,6 +34,8 @@ namespace ResortEmpire.NPC
         public Building Target => _target;
         public float ServiceProgress => _serviceProgress;
         public bool IsPaused => _wavePaused || _applicationPaused;
+        public Sprite StandingSprite => standingSprite;
+        public Sprite SeatedSprite => seatedSprite;
 
         private void Awake()
         {
@@ -105,10 +107,14 @@ namespace ResortEmpire.NPC
 
                 case NpcState.WalkingToSeat:
                     need.Wait(deltaTime);
-                    if (MoveTo(_target.SeatPosition(gameObject), deltaTime))
+                    // Without a pivot the guest walks in through the entrance and stays out of sight.
+                    bool shown = _target.TryGetPivot(gameObject, out Vector3 pivot);
+                    if (MoveTo(pivot, deltaTime))
                     {
                         _state.SetState(NpcState.UsingBuilding);
-                        _renderer.sprite = seatedSprite;
+                        if (_target.StandingOnly) ShowStanding();
+                        else _renderer.sprite = seatedSprite;
+                        _renderer.enabled = shown;
                     }
                     break;
 
@@ -172,6 +178,7 @@ namespace ResortEmpire.NPC
             if (_target != null) _target.Leave(gameObject);
             _target = null;
             _serviceProgress = 0f;
+            if (_renderer != null) _renderer.enabled = true;
         }
 
         private void OnDisable()
