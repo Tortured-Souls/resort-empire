@@ -1100,7 +1100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.World.BuildingPlot
   displayName: Bungalows
-  buildingPrefab: {fileID: 3355400184635415096, guid: 0733c2defd131334ba631d4923306b10, type: 3}
+  buildingPrefab: {fileID: 4694984355403215689, guid: ece45ec0251ea5d4f8567bd29e564653, type: 3}
   unlockAfterWave: 6
   price: 2500
   ground: {fileID: 752411992}
