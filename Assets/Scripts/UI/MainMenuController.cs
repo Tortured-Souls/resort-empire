@@ -1,3 +1,4 @@
+using ResortEmpire.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,9 +9,16 @@ namespace ResortEmpire.UI
         [SerializeField] private string gameWorldScene = "GameWorld";
         [SerializeField] private string settingsScene = "Settings";
 
-        /// <summary>Loads the game world scene.</summary>
+        /// <summary>Loads the game world scene, continuing the saved game when there is one.</summary>
         public void PlayGame()
         {
+            SceneManager.LoadScene(gameWorldScene);
+        }
+
+        /// <summary>Deletes the saved game and starts a new one.</summary>
+        public void NewGame()
+        {
+            SaveStorage.Delete(SaveStorage.DefaultPath);
             SceneManager.LoadScene(gameWorldScene);
         }
 

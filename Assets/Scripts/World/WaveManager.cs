@@ -60,6 +60,14 @@ namespace ResortEmpire.World
             enabled = false;
         }
 
+        /// <summary>Continues a saved game: the next started wave follows <paramref name="completedWaves"/>.</summary>
+        /// <param name="completedWaves">Number of the last completed wave.</param>
+        public void ResumeFrom(int completedWaves)
+        {
+            if (_state == WaveState.WaveActive) return;
+            _wave = Mathf.Max(0, completedWaves);
+        }
+
         /// <summary>
         /// Player action from AWAITING_WAVE: the guests of the docked ship start to disembark.
         /// Returns false in any other state.
