@@ -115,6 +115,22 @@ namespace ResortEmpire.World
             WorkersChanged?.Invoke(Workers);
         }
 
+        /// <summary>Rebuilds a saved resort: marks waves as completed and places bought plots for free.</summary>
+        /// <param name="completedWaves">Number of the last completed wave.</param>
+        /// <param name="boughtPlots">Indices into <see cref="Plots"/> of the plots the player owns.</param>
+        public void Restore(int completedWaves, IEnumerable<int> boughtPlots)
+        {
+            _completedWaves = Mathf.Max(_completedWaves, completedWaves);
+            foreach (int index in boughtPlots)
+            {
+                if (index < 0 || index >= plots.Count) continue;
+                if (plots[index].TryBuild(out var building)) _buildings.Add(building);
+            }
+
+            RefreshPlots();
+            WorkersChanged?.Invoke(Workers);
+        }
+
         /// <summary>Called by the wave manager when <paramref name="wave"/> (1-based) is finished.</summary>
         public void CompleteWave(int wave)
         {
