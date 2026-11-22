@@ -49,6 +49,7 @@ namespace ResortEmpire.World
         [SerializeField, Min(0f)] private float markerBobSpeed = 3f;
 
         private BuildingSpot _spot;
+        private Collider2D _collider;
         private Vector3 _markerBase;
         private PlotState _state = PlotState.Locked;
 
@@ -81,6 +82,7 @@ namespace ResortEmpire.World
 
         private void Awake()
         {
+            _collider = GetComponent<Collider2D>();
             if (marker != null) _markerBase = marker.localPosition;
             if (sign != null)
             {
@@ -138,6 +140,8 @@ namespace ResortEmpire.World
         private void ApplyVisuals()
         {
             bool unlocked = _state == PlotState.Unlocked;
+            // The placed building takes the taps from here on.
+            _collider.enabled = !unlocked;
             Color tint = _state switch
             {
                 PlotState.Locked => lockedTint,

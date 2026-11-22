@@ -90,16 +90,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1792098405892331991, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
       propertyPath: m_fontColor.b
-      value: 0.22
+      value: 0.06666667
       objectReference: {fileID: 0}
     - target: {fileID: 1792098405892331991, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
       propertyPath: m_fontColor.g
-      value: 0.18
+      value: 0.14509805
       objectReference: {fileID: 0}
     - target: {fileID: 1792098405892331991, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
       propertyPath: m_fontColor.r
-      value: 0.12
+      value: 0.2901961
       objectReference: {fileID: 0}
+    - target: {fileID: 1792098405892331991, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 7164858874106490178, guid: e2d4cb06a65f944c99de7e0f9ede1670, type: 2}
+    - target: {fileID: 4881057856256120409, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 3162755a6b6d64c3dac67c5dd6afcee7, type: 3}
     - target: {fileID: 4881057856256120409, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
       propertyPath: m_Color.b
       value: 1

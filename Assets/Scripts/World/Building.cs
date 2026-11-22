@@ -2,12 +2,25 @@ using System;
 using System.Collections.Generic;
 using ResortEmpire.NPC;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace ResortEmpire.World
 {
-    public class Building : MonoBehaviour
+    /// <summary>
+    /// A service building. It seats <see cref="Capacity"/> guests at once and serves each in
+    /// <see cref="ServiceDuration"/>: full speed with a worker, slower without one (build
+    /// document §4.4–4.5). Workers are assigned by <see cref="BuildingSystem"/>; a tap on the
+    /// building raises <see cref="Clicked"/>, so it needs a <see cref="Collider2D"/>.
+    /// A floating badge marks an unstaffed building with at least three guests waiting.
+    /// </summary>
+    public class Building : MonoBehaviour, IPointerClickHandler
     {
         public const int MaxLevel = 3;
+
+        /// <summary>worker_slots: workers one building takes, the same for every building in the prototype.</summary>
+        public const int WorkerSlots = 1;
+
+        internal const int QueueWarningThreshold = 3;
 
         [SerializeField] private string displayName = "Building";
         [SerializeField] private Transform entrance;
@@ -22,9 +35,12 @@ namespace ResortEmpire.World
         [SerializeField] private int[] upgradePrices = { 500, 1200 };
 
         [SerializeField] private NeedType servedNeed = NeedType.Rooms;
-        [SerializeField, Min(0.01f)] private float serviceTime = 36f;
-        [SerializeField, Range(0.01f, 1f)] private float workerUtilization = 0.33f;
-        [SerializeField] private bool hasWorker;
+        [Tooltip("service_time: seconds to serve one guest with a worker.")]
+        [SerializeField, Min(0.01f)] private float serviceTime = 12f;
+        [Tooltip("utilization_empty: share of full speed without a worker. Never 0, or a wave could not end (WR2).")]
+        [SerializeField, Range(0.01f, 1f)] private float emptyUtilization = 0.33f;
+        [Tooltip("Worker standing at the building; hidden while nobody works here.")]
+        [SerializeField] private SpriteRenderer workerFigure;
         [SerializeField] private Vector2 queueStep = new(-0.3f, -0.2f);
 
         [Header("Visitor pivots")]
@@ -44,10 +60,20 @@ namespace ResortEmpire.World
         private float _boostServiceMultiplier = 1f;
         private readonly List<GameObject> _queue = new();
         private int _visitorCount;
+        private bool _hasWorker;
+        private SlowServiceIndicator _indicator;
+
+        internal event Action<Building> QueueWarningStarted;
+        internal bool NeedsQueueWarning { get; private set; }
+        // Distinguishes a new backlog from a previous warning still on screen or waiting to be shown.
+        internal int QueueEpisode { get; private set; }
 
         public event Action<Building> VisitorsChanged;
 
         public event Action<Building> LevelChanged;
+
+        /// <summary>Raised when the player taps the building.</summary>
+        public event Action<Building> Clicked;
 
         /// <summary>Raised when a boost starts or runs out.</summary>
         public event Action<Building> BoostChanged;
@@ -79,8 +105,8 @@ namespace ResortEmpire.World
 
         public NeedType ServedNeed => servedNeed;
 
-        /// <summary>Unstaffed seconds per request. Staffing changes the rate, not progress.</summary>
-        public float ServiceDuration => Mathf.Max(0.01f, serviceTime * _boostServiceMultiplier * (hasWorker ? workerUtilization : 1f));
+        /// <summary>utilization: 1 with a worker, <c>utilization_empty</c> without.</summary>
+        public float Utilization => _hasWorker ? 1f : emptyUtilization;
 
         /// <summary>True while an Energy boost speeds up the service.</summary>
         public bool IsBoosted => _boostTimeLeft > 0f;
@@ -88,11 +114,14 @@ namespace ResortEmpire.World
         /// <summary>Seconds left of the running boost, 0 without one.</summary>
         public float BoostTimeLeft => _boostTimeLeft;
 
-        public bool HasWorker
-        {
-            get => hasWorker;
-            set => hasWorker = value;
-        }
+        /// <summary>
+        /// Seconds to serve one guest at the current <see cref="Utilization"/> and boost.
+        /// Read every frame so changes also affect guests already seated.
+        /// </summary>
+        public float ServiceDuration => Mathf.Max(0.01f, serviceTime * _boostServiceMultiplier / Utilization);
+
+        /// <summary>True while a worker works here; see <see cref="WorkerSlots"/>.</summary>
+        public bool HasWorker => _hasWorker;
 
         public int QueueCount => _queue.Count;
 
@@ -102,10 +131,13 @@ namespace ResortEmpire.World
 
         public bool HasVisitor(GameObject visitor) => visitor != null && _visitors.Contains(visitor);
 
+        private void Awake() => ApplyWorkerFigure();
+
         public void JoinQueue(GameObject visitor)
         {
             if (visitor == null || _queue.Contains(visitor) || _visitors.Contains(visitor)) return;
             _queue.Add(visitor);
+            RefreshQueueWarning();
         }
 
         public Vector3 QueuePosition(GameObject visitor)
@@ -134,9 +166,12 @@ namespace ResortEmpire.World
         public bool TryEnter(GameObject visitor)
         {
             if (visitor == null || IsFull || _visitors.Contains(visitor)) return false;
-            if (_queue.Count > 0 && _queue[0] != visitor) return false;
+            if (_queue.Count > 0)
+            {
+                if (_queue[0] != visitor) return false;
+                RemoveQueuedAt(0);
+            }
 
-            _queue.Remove(visitor);
             // Lowest free slot first, so visible pivots fill up before guests go inside unseen.
             int slot = _visitors.IndexOf(null);
             if (slot >= 0) _visitors[slot] = visitor;
@@ -150,7 +185,13 @@ namespace ResortEmpire.World
         public void Leave(GameObject visitor)
         {
             if (visitor == null) return;
-            _queue.Remove(visitor);
+            int queued = _queue.IndexOf(visitor);
+            if (queued >= 0)
+            {
+                RemoveQueuedAt(queued);
+                return;
+            }
+
             int slot = _visitors.IndexOf(visitor);
             if (slot < 0) return;
             // Keep seat indices stable when a different guest finishes first.
@@ -159,6 +200,12 @@ namespace ResortEmpire.World
 
             OnVisitorLeft(visitor);
             VisitorsChanged?.Invoke(this);
+        }
+
+        private void RemoveQueuedAt(int index)
+        {
+            _queue.RemoveAt(index);
+            RefreshQueueWarning();
         }
 
         // Raises the level by one; paying for the upgrade is up to the caller.
@@ -170,6 +217,40 @@ namespace ResortEmpire.World
             LevelChanged?.Invoke(this);
             VisitorsChanged?.Invoke(this);
             return true;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Left) Clicked?.Invoke(this);
+        }
+
+        // Only BuildingSystem staffs buildings; it keeps one worker fewer than buildings.
+        internal void SetWorker(bool hasWorker)
+        {
+            _hasWorker = hasWorker;
+            ApplyWorkerFigure();
+            RefreshQueueWarning();
+        }
+
+        private void ApplyWorkerFigure()
+        {
+            if (workerFigure != null) workerFigure.enabled = _hasWorker;
+        }
+
+        private void RefreshQueueWarning()
+        {
+            bool needed = !HasWorker && QueueCount >= QueueWarningThreshold;
+            if (needed == NeedsQueueWarning) return;
+            NeedsQueueWarning = needed;
+
+            if (_indicator != null) _indicator.gameObject.SetActive(needed);
+            else if (needed) _indicator = SlowServiceIndicator.Create(this);
+
+            if (needed)
+            {
+                QueueEpisode++;
+                QueueWarningStarted?.Invoke(this);
+            }
         }
 
         /// <summary>
