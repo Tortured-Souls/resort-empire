@@ -11,6 +11,7 @@ namespace ResortEmpire.World
     /// <see cref="ServiceDuration"/>: full speed with a worker, slower without one (build
     /// document §4.4–4.5). Workers are assigned by <see cref="BuildingSystem"/>; a tap on the
     /// building raises <see cref="Clicked"/>, so it needs a <see cref="Collider2D"/>.
+    /// A floating badge marks reduced service speed or a queue of more than four waiting guests.
     /// </summary>
     public class Building : MonoBehaviour, IPointerClickHandler
     {
@@ -18,6 +19,8 @@ namespace ResortEmpire.World
 
         /// <summary>worker_slots: workers one building takes, the same for every building in the prototype.</summary>
         public const int WorkerSlots = 1;
+
+        private const int LongQueueThreshold = 4;
 
         [SerializeField] private string displayName = "Building";
         [SerializeField] private Transform entrance;
@@ -47,6 +50,12 @@ namespace ResortEmpire.World
         private readonly List<GameObject> _queue = new();
         private int _visitorCount;
         private bool _hasWorker;
+        private SlowServiceIndicator _indicator;
+
+        internal event Action<Building> LongQueueStarted;
+        internal bool HasLongQueue => QueueCount > LongQueueThreshold;
+        // Distinguishes a new backlog from a previous warning still on screen or waiting to be shown.
+        internal int QueueEpisode { get; private set; }
 
         public event Action<Building> VisitorsChanged;
 
@@ -99,10 +108,18 @@ namespace ResortEmpire.World
 
         private void Awake() => ApplyWorkerFigure();
 
+        private void Start() => RefreshServiceIndicator();
+
         public void JoinQueue(GameObject visitor)
         {
             if (visitor == null || _queue.Contains(visitor) || _visitors.Contains(visitor)) return;
             _queue.Add(visitor);
+            if (QueueCount == LongQueueThreshold + 1)
+            {
+                QueueEpisode++;
+                RefreshServiceIndicator();
+                LongQueueStarted?.Invoke(this);
+            }
         }
 
         public Vector3 QueuePosition(GameObject visitor)
@@ -131,9 +148,12 @@ namespace ResortEmpire.World
         public bool TryEnter(GameObject visitor)
         {
             if (visitor == null || IsFull || _visitors.Contains(visitor)) return false;
-            if (_queue.Count > 0 && _queue[0] != visitor) return false;
+            if (_queue.Count > 0)
+            {
+                if (_queue[0] != visitor) return false;
+                RemoveQueuedAt(0);
+            }
 
-            _queue.Remove(visitor);
             // Lowest free slot first, so visible pivots fill up before guests go inside unseen.
             int slot = _visitors.IndexOf(null);
             if (slot >= 0) _visitors[slot] = visitor;
@@ -147,7 +167,13 @@ namespace ResortEmpire.World
         public void Leave(GameObject visitor)
         {
             if (visitor == null) return;
-            _queue.Remove(visitor);
+            int queued = _queue.IndexOf(visitor);
+            if (queued >= 0)
+            {
+                RemoveQueuedAt(queued);
+                return;
+            }
+
             int slot = _visitors.IndexOf(visitor);
             if (slot < 0) return;
             // Keep seat indices stable when a different guest finishes first.
@@ -156,6 +182,12 @@ namespace ResortEmpire.World
 
             OnVisitorLeft(visitor);
             VisitorsChanged?.Invoke(this);
+        }
+
+        private void RemoveQueuedAt(int index)
+        {
+            _queue.RemoveAt(index);
+            if (QueueCount == LongQueueThreshold) RefreshServiceIndicator();
         }
 
         // Raises the level by one; paying for the upgrade is up to the caller.
@@ -179,11 +211,19 @@ namespace ResortEmpire.World
         {
             _hasWorker = hasWorker;
             ApplyWorkerFigure();
+            RefreshServiceIndicator();
         }
 
         private void ApplyWorkerFigure()
         {
             if (workerFigure != null) workerFigure.enabled = _hasWorker;
+        }
+
+        private void RefreshServiceIndicator()
+        {
+            bool show = Utilization < 1f || HasLongQueue;
+            if (_indicator != null) _indicator.gameObject.SetActive(show);
+            else if (show) _indicator = SlowServiceIndicator.Create(this);
         }
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }

@@ -65,7 +65,11 @@ namespace ResortEmpire.World
             if (purchasePanel != null) purchasePanel.BuyClicked += OnBuyClicked;
             if (workerPanel != null) workerPanel.MoveClicked += OnMoveClicked;
             foreach (var plot in plots) plot.Clicked += OnPlotClicked;
-            foreach (var building in _buildings) building.Clicked += OnBuildingClicked;
+            foreach (var building in _buildings)
+            {
+                Subscribe(building);
+                if (building.HasLongQueue) OnLongQueueStarted(building);
+            }
         }
 
         private void OnDisable()
@@ -74,7 +78,11 @@ namespace ResortEmpire.World
             if (purchasePanel != null) purchasePanel.BuyClicked -= OnBuyClicked;
             if (workerPanel != null) workerPanel.MoveClicked -= OnMoveClicked;
             foreach (var plot in plots) plot.Clicked -= OnPlotClicked;
-            foreach (var building in _buildings) building.Clicked -= OnBuildingClicked;
+            foreach (var building in _buildings)
+            {
+                building.Clicked -= OnBuildingClicked;
+                building.LongQueueStarted -= OnLongQueueStarted;
+            }
         }
 
         private void Start()
@@ -148,7 +156,49 @@ namespace ResortEmpire.World
         private void AddBuilding(Building building)
         {
             _buildings.Add(building);
+            Subscribe(building);
+        }
+
+        private void Subscribe(Building building)
+        {
             building.Clicked += OnBuildingClicked;
+            building.LongQueueStarted += OnLongQueueStarted;
+        }
+
+        private void OnLongQueueStarted(Building building)
+        {
+            int episode = building.QueueEpisode;
+            Notifications.ShowQueueWarning($"{building.DisplayName}: slow service",
+                "More than four guests are waiting.",
+                () => this != null && isActiveAndEnabled && building != null && building.isActiveAndEnabled
+                    && building.HasLongQueue && building.QueueEpisode == episode,
+                () => !building.HasWorker && HasWorkerToMove(),
+                () => MoveRandomWorkerTo(building));
+        }
+
+        private bool HasWorkerToMove()
+        {
+            foreach (var building in _buildings)
+                if (CanDonateWorker(building)) return true;
+            return false;
+        }
+
+        private static bool CanDonateWorker(Building building) =>
+            building != null && building.isActiveAndEnabled && building.HasWorker;
+
+        private void MoveRandomWorkerTo(Building target)
+        {
+            if (target.HasWorker || !target.HasLongQueue) return;
+
+            // Reservoir sampling gives each currently staffed building the same chance, without a list.
+            Building donor = null;
+            int count = 0;
+            foreach (var building in _buildings)
+            {
+                if (CanDonateWorker(building) && UnityEngine.Random.Range(0, ++count) == 0) donor = building;
+            }
+
+            if (donor != null && TryMoveWorker(donor, target) && workerPanel != null) workerPanel.Refresh();
         }
 
         private void OnPlotClicked(BuildingPlot plot)
