@@ -11,7 +11,7 @@ namespace ResortEmpire.World
     /// <see cref="ServiceDuration"/>: full speed with a worker, slower without one (build
     /// document §4.4–4.5). Workers are assigned by <see cref="BuildingSystem"/>; a tap on the
     /// building raises <see cref="Clicked"/>, so it needs a <see cref="Collider2D"/>.
-    /// A floating badge marks reduced service speed or a queue of more than four waiting guests.
+    /// A floating badge marks a queue of more than four guests waiting at the building.
     /// </summary>
     public class Building : MonoBehaviour, IPointerClickHandler
     {
@@ -107,8 +107,6 @@ namespace ResortEmpire.World
         public bool HasVisitor(GameObject visitor) => visitor != null && _visitors.Contains(visitor);
 
         private void Awake() => ApplyWorkerFigure();
-
-        private void Start() => RefreshServiceIndicator();
 
         public void JoinQueue(GameObject visitor)
         {
@@ -211,7 +209,6 @@ namespace ResortEmpire.World
         {
             _hasWorker = hasWorker;
             ApplyWorkerFigure();
-            RefreshServiceIndicator();
         }
 
         private void ApplyWorkerFigure()
@@ -221,9 +218,8 @@ namespace ResortEmpire.World
 
         private void RefreshServiceIndicator()
         {
-            bool show = Utilization < 1f || HasLongQueue;
-            if (_indicator != null) _indicator.gameObject.SetActive(show);
-            else if (show) _indicator = SlowServiceIndicator.Create(this);
+            if (_indicator != null) _indicator.gameObject.SetActive(HasLongQueue);
+            else if (HasLongQueue) _indicator = SlowServiceIndicator.Create(this);
         }
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
