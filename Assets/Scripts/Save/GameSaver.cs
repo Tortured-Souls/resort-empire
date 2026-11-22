@@ -5,19 +5,21 @@ using UnityEngine;
 namespace ResortEmpire.Save
 {
     /// <summary>
-    /// Loads the local save when the GameWorld scene starts and writes it after every finished
-    /// wave, every bought plot and when the player leaves the game.
+    /// Loads the local save when the GameWorld scene starts and writes it periodically, on every
+    /// wave state change, every bought plot and when the player leaves the game.
     /// </summary>
     [DefaultExecutionOrder(100)]
     public sealed class GameSaver : MonoBehaviour
     {
         [SerializeField] private BuildingSystem buildingSystem;
         [SerializeField] private WaveManager waveManager;
+        [SerializeField, Min(1f)] private float autosaveIntervalSeconds = 10f;
 
         private CoinWallet _coinWallet;
         private GemWallet _gemWallet;
         private EnergyWallet _energyWallet;
         private string _path;
+        private float _secondsSinceSave;
 
         private void Start()
         {
@@ -45,6 +47,12 @@ namespace ResortEmpire.Save
             if (waveManager != null) waveManager.StateChanged -= OnWaveStateChanged;
         }
 
+        private void Update()
+        {
+            _secondsSinceSave += Time.unscaledDeltaTime;
+            if (_secondsSinceSave >= autosaveIntervalSeconds) Save();
+        }
+
         private void OnApplicationPause(bool paused)
         {
             if (paused) Save();
@@ -54,10 +62,7 @@ namespace ResortEmpire.Save
 
         private void OnBuildingPurchased(Building building) => Save();
 
-        private void OnWaveStateChanged(WaveState previous, WaveState next)
-        {
-            if (previous == WaveState.WaveActive && next == WaveState.WaveIncoming) Save();
-        }
+        private void OnWaveStateChanged(WaveState previous, WaveState next) => Save();
 
         private void Apply(SaveData data)
         {
@@ -111,6 +116,7 @@ namespace ResortEmpire.Save
         private void Save()
         {
             if (!enabled || buildingSystem == null || waveManager == null) return;
+            _secondsSinceSave = 0f;
             SaveStorage.Write(Capture(), _path);
         }
 

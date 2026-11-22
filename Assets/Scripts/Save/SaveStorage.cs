@@ -24,8 +24,8 @@ namespace ResortEmpire.Save
         {
             string temporaryPath = path + ".tmp";
             File.WriteAllText(temporaryPath, JsonUtility.ToJson(data, true));
-            if (File.Exists(path)) File.Delete(path);
-            File.Move(temporaryPath, path);
+            if (File.Exists(path)) File.Replace(temporaryPath, path, null);
+            else File.Move(temporaryPath, path);
         }
 
         /// <summary>Reads the save at <paramref name="path"/>.</summary>
