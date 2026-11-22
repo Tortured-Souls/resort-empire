@@ -148,9 +148,9 @@ MonoBehaviour:
   serviceTime: 12
   emptyUtilization: 0.33
   workerFigure: {fileID: 3163366384001318953}
-  seats: []
   queueStep: {x: -0.3, y: -0.2}
-  seatSpacing: 0.35
+  pivots: []
+  standingOnly: 0
 --- !u!61 &3916201618233326093
 BoxCollider2D:
   m_ObjectHideFlags: 0

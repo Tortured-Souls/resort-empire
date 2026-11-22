@@ -34,9 +34,14 @@ namespace ResortEmpire.World
         [SerializeField, Range(0.01f, 1f)] private float emptyUtilization = 0.33f;
         [Tooltip("Worker standing at the building; hidden while nobody works here.")]
         [SerializeField] private SpriteRenderer workerFigure;
-        [SerializeField] private Transform[] seats = Array.Empty<Transform>();
         [SerializeField] private Vector2 queueStep = new(-0.3f, -0.2f);
-        [SerializeField, Min(0.01f)] private float seatSpacing = 0.35f;
+
+        [Header("Visitor pivots")]
+        [Tooltip("Where visitors show while using the building, one per slot; each pivot marks the visitor's feet. Visitors beyond the pivot count stay inside, hidden.")]
+        [SerializeField] private Transform[] pivots = Array.Empty<Transform>();
+
+        [Tooltip("Visitors stand on the pivots instead of sitting.")]
+        [SerializeField] private bool standingOnly;
 
         private readonly List<GameObject> _visitors = new();
         private readonly List<GameObject> _queue = new();
@@ -58,7 +63,17 @@ namespace ResortEmpire.World
 
         public bool CanUpgrade => level < MaxLevel;
 
-        public int Capacity => level <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[level - 1]) : capacity;
+        public int Capacity => CapacityAt(level);
+
+        /// <summary>Capacity of this building at <paramref name="buildingLevel"/> (1..<see cref="MaxLevel"/>).</summary>
+        public int CapacityAt(int buildingLevel) =>
+            buildingLevel <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[buildingLevel - 1]) : capacity;
+
+        /// <summary>True when visitors stand on the pivots instead of sitting.</summary>
+        public bool StandingOnly => standingOnly;
+
+        /// <summary>Visitor pivots by slot; null entries are slots without a pivot.</summary>
+        public IReadOnlyList<Transform> Pivots => pivots;
 
         public NeedType ServedNeed => servedNeed;
 
@@ -96,12 +111,21 @@ namespace ResortEmpire.World
             return EntrancePosition + (Vector3)(queueStep * index);
         }
 
-        public Vector3 SeatPosition(GameObject visitor)
+        /// <summary>
+        /// Pivot of the slot <paramref name="visitor"/> occupies. False when the slot has no pivot: the
+        /// visitor stays inside, out of sight, and <paramref name="position"/> is the entrance.
+        /// </summary>
+        public bool TryGetPivot(GameObject visitor, out Vector3 position)
         {
-            int index = _visitors.IndexOf(visitor);
-            if (index < 0) return EntrancePosition;
-            if (index < seats.Length && seats[index] != null) return seats[index].position;
-            return EntrancePosition + new Vector3((index - (Capacity - 1) * 0.5f) * seatSpacing, 0.35f, 0f);
+            int slot = _visitors.IndexOf(visitor);
+            if (slot >= 0 && slot < pivots.Length && pivots[slot] != null)
+            {
+                position = pivots[slot].position;
+                return true;
+            }
+
+            position = EntrancePosition;
+            return false;
         }
 
         public bool TryEnter(GameObject visitor)
@@ -110,6 +134,7 @@ namespace ResortEmpire.World
             if (_queue.Count > 0 && _queue[0] != visitor) return false;
 
             _queue.Remove(visitor);
+            // Lowest free slot first, so visible pivots fill up before guests go inside unseen.
             int slot = _visitors.IndexOf(null);
             if (slot >= 0) _visitors[slot] = visitor;
             else _visitors.Add(visitor);

@@ -39,8 +39,11 @@ namespace ResortEmpire.World
         [SerializeField] private SpriteRenderer ground;
         [SerializeField] private SpriteRenderer signBoard;
         [SerializeField] private TMP_Text sign;
+        [Tooltip("Dark outline so the sign text stays readable on the wooden board.")]
+        [SerializeField] private Color signOutlineColor = new(0.25f, 0.13f, 0.05f, 1f);
+        [SerializeField, Range(0f, 0.5f)] private float signOutlineWidth = 0.3f;
         [SerializeField] private Transform marker;
-        [SerializeField] private Color lockedTint = new(0.55f, 0.55f, 0.55f, 1f);
+        [SerializeField] private Color lockedTint = new(0.78f, 0.78f, 0.78f, 1f);
         [SerializeField] private Color notAffordableTint = new(1f, 0.7f, 0.7f, 1f);
         [SerializeField, Min(0f)] private float markerBobHeight = 0.12f;
         [SerializeField, Min(0f)] private float markerBobSpeed = 3f;
@@ -81,6 +84,12 @@ namespace ResortEmpire.World
         {
             _collider = GetComponent<Collider2D>();
             if (marker != null) _markerBase = marker.localPosition;
+            if (sign != null)
+            {
+                sign.outlineColor = signOutlineColor;
+                sign.outlineWidth = signOutlineWidth;
+            }
+
             ApplyVisuals();
         }
 
@@ -156,8 +165,8 @@ namespace ResortEmpire.World
             {
                 sign.gameObject.SetActive(!unlocked);
                 sign.text = _state == PlotState.Locked
-                    ? $"{displayName}\n<size=70%>after wave {unlockAfterWave}</size>"
-                    : $"{displayName}\n<size=70%>{price:N0} coins</size>";
+                    ? $"{displayName}\n<size=85%>after wave {unlockAfterWave}</size>"
+                    : $"{displayName}\n<size=85%>{price:N0} coins</size>";
             }
 
             if (marker != null)
