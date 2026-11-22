@@ -209,12 +209,15 @@ MonoBehaviour:
   entrance: {fileID: 593847313700995538}
   capacity: 2
   level: 1
-  capacityPerLevel: 020000000300000004000000i
+  capacityPerLevel: 020000000400000006000000i
+  upgradePrices: f4010000b0040000i
   servedNeed: 1
   serviceTime: 12
   emptyUtilization: 0.33
   workerFigure: {fileID: 5368131251642600649}
+  seats: []
   queueStep: {x: -0.3, y: -0.2}
+  seatSpacing: 0.35
   pivots:
   - {fileID: 1608672712534561500}
   - {fileID: 7714072786604745115}

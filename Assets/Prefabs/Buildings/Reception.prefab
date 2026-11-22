@@ -302,11 +302,14 @@ MonoBehaviour:
   capacity: 4
   level: 1
   capacityPerLevel: 040000000600000008000000i
+  upgradePrices: f4010000b0040000i
   servedNeed: 0
   serviceTime: 12
   emptyUtilization: 0.33
   workerFigure: {fileID: 635017689013748392}
+  seats: []
   queueStep: {x: -0.3, y: -0.2}
+  seatSpacing: 0.35
   pivots:
   - {fileID: 8896547743951941136}
   - {fileID: 6137158596173437921}

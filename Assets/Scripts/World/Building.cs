@@ -30,6 +30,10 @@ namespace ResortEmpire.World
         // Capacity for levels 1..MaxLevel; when empty, capacity is used for every level.
         [SerializeField] private int[] capacityPerLevel = Array.Empty<int>();
 
+        [Header("Upgrade")]
+        [Tooltip("Coins for the next level: [0] is level 1 to 2, [1] is level 2 to 3.")]
+        [SerializeField] private int[] upgradePrices = { 500, 1200 };
+
         [SerializeField] private NeedType servedNeed = NeedType.Rooms;
         [Tooltip("service_time: seconds to serve one guest with a worker.")]
         [SerializeField, Min(0.01f)] private float serviceTime = 12f;
@@ -46,7 +50,14 @@ namespace ResortEmpire.World
         [Tooltip("Visitors stand on the pivots instead of sitting.")]
         [SerializeField] private bool standingOnly;
 
+        [Header("Boost")]
+        [SerializeField] private Color boostTint = new(1f, 0.92f, 0.55f, 1f);
+
         private readonly List<GameObject> _visitors = new();
+        private SpriteRenderer _renderer;
+        private Color _baseColor = Color.white;
+        private float _boostTimeLeft;
+        private float _boostServiceMultiplier = 1f;
         private readonly List<GameObject> _queue = new();
         private int _visitorCount;
         private bool _hasWorker;
@@ -64,6 +75,9 @@ namespace ResortEmpire.World
         /// <summary>Raised when the player taps the building.</summary>
         public event Action<Building> Clicked;
 
+        /// <summary>Raised when a boost starts or runs out.</summary>
+        public event Action<Building> BoostChanged;
+
         public string DisplayName => displayName;
 
         public Vector3 EntrancePosition => entrance != null ? entrance.position : transform.position;
@@ -74,6 +88,11 @@ namespace ResortEmpire.World
 
         public int Capacity => CapacityAt(level);
 
+        /// <summary>Capacity after the next upgrade; the current one at max level.</summary>
+        public int NextCapacity => CapacityAt(CanUpgrade ? level + 1 : level);
+
+        /// <summary>Coins needed for the next level, 0 at max level.</summary>
+        public int UpgradePrice => CanUpgrade && level - 1 < upgradePrices.Length ? Mathf.Max(0, upgradePrices[level - 1]) : 0;
         /// <summary>Capacity of this building at <paramref name="buildingLevel"/> (1..<see cref="MaxLevel"/>).</summary>
         public int CapacityAt(int buildingLevel) =>
             buildingLevel <= capacityPerLevel.Length ? Mathf.Max(1, capacityPerLevel[buildingLevel - 1]) : capacity;
@@ -89,11 +108,17 @@ namespace ResortEmpire.World
         /// <summary>utilization: 1 with a worker, <c>utilization_empty</c> without.</summary>
         public float Utilization => _hasWorker ? 1f : emptyUtilization;
 
+        /// <summary>True while an Energy boost speeds up the service.</summary>
+        public bool IsBoosted => _boostTimeLeft > 0f;
+
+        /// <summary>Seconds left of the running boost, 0 without one.</summary>
+        public float BoostTimeLeft => _boostTimeLeft;
+
         /// <summary>
-        /// Seconds to serve one guest at the current <see cref="Utilization"/>. Read it every frame:
-        /// a worker arriving or leaving changes the speed of guests already seated, too.
+        /// Seconds to serve one guest at the current <see cref="Utilization"/> and boost.
+        /// Read every frame so changes also affect guests already seated.
         /// </summary>
-        public float ServiceDuration => serviceTime / Utilization;
+        public float ServiceDuration => Mathf.Max(0.01f, serviceTime * _boostServiceMultiplier / Utilization);
 
         /// <summary>True while a worker works here; see <see cref="WorkerSlots"/>.</summary>
         public bool HasWorker => _hasWorker;
@@ -227,6 +252,41 @@ namespace ResortEmpire.World
                 QueueWarningStarted?.Invoke(this);
             }
         }
+
+        /// <summary>
+        /// Speeds up the service for <paramref name="seconds"/>: service time is multiplied by
+        /// <paramref name="serviceMultiplier"/> (0.5 = twice as fast). Paying is up to the caller.
+        /// </summary>
+        public bool StartBoost(float seconds, float serviceMultiplier)
+        {
+            if (IsBoosted || seconds <= 0f) return false;
+
+            _boostTimeLeft = seconds;
+            _boostServiceMultiplier = Mathf.Clamp(serviceMultiplier, 0.1f, 1f);
+            if (Renderer != null)
+            {
+                _baseColor = Renderer.color;
+                Renderer.color = _baseColor * boostTint;
+            }
+
+            BoostChanged?.Invoke(this);
+            return true;
+        }
+
+        protected virtual void Update()
+        {
+            if (!IsBoosted) return;
+
+            _boostTimeLeft -= Time.deltaTime;
+            if (_boostTimeLeft > 0f) return;
+
+            _boostTimeLeft = 0f;
+            _boostServiceMultiplier = 1f;
+            if (Renderer != null) Renderer.color = _baseColor;
+            BoostChanged?.Invoke(this);
+        }
+
+        private SpriteRenderer Renderer => _renderer != null ? _renderer : _renderer = GetComponent<SpriteRenderer>();
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
 
