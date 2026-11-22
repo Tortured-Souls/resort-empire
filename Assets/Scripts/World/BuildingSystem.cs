@@ -9,8 +9,7 @@ namespace ResortEmpire.World
     /// Owns the buildings of the resort: places the starting buildings, unlocks plots after
     /// waves, sells them for coins and keeps the worker count (always one less than buildings).
     /// The wave manager reports progress through <see cref="CompleteWave"/> and
-    /// <see cref="SetAwaitingWave"/>; plots can only be bought in AWAITING_WAVE, while a cruise
-    /// ship waits at the dock.
+    /// <see cref="SetAwaitingWave"/>; plots can only be bought while awaiting the next wave.
     /// </summary>
     public sealed class BuildingSystem : MonoBehaviour
     {

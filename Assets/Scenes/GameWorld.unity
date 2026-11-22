@@ -526,134 +526,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
---- !u!1001 &80277774
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 744083733}
-    m_Modifications:
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_Pivot.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_Pivot.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 360
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 72
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -190
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 24
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3900282372210297054, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_text
-      value: Reject
-      objectReference: {fileID: 0}
-    - target: {fileID: 4998763019134288324, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      propertyPath: m_Name
-      value: RejectButton
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4998763019134288324, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 80277777}
-  m_SourcePrefab: {fileID: 100100000, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
---- !u!224 &80277775 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 2459635330566751665, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-  m_PrefabInstance: {fileID: 80277774}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &80277776 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4998763019134288324, guid: db066ad9c3d9a8142b43e1ba78deb624, type: 3}
-  m_PrefabInstance: {fileID: 80277774}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &80277777
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 80277776}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2780461d7a3144a30b135b04a2531729, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.UI.ShipDecisionButton
-  waveManager: {fileID: 1177411212}
-  decision: 1
 --- !u!1 &90597954
 GameObject:
   m_ObjectHideFlags: 0
@@ -2619,7 +2491,6 @@ RectTransform:
   - {fileID: 2119895987}
   - {fileID: 746571241}
   - {fileID: 796398023}
-  - {fileID: 80277775}
   m_Father: {fileID: 399764219}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2934,7 +2805,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 926658965356352696, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 190
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 926658965356352696, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2993,9 +2864,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2780461d7a3144a30b135b04a2531729, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.UI.ShipDecisionButton
+  m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.UI.StartWaveButton
   waveManager: {fileID: 1177411212}
-  decision: 0
 --- !u!1 &817312777
 GameObject:
   m_ObjectHideFlags: 0
