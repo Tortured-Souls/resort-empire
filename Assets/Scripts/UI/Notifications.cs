@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace ResortEmpire.UI
 {
@@ -13,6 +15,19 @@ namespace ResortEmpire.UI
         /// <summary>Shows a toast that closes via its × button or after its display time.</summary>
         public static void Show(string title, string message)
         {
+            GetToast().Show(title, message);
+        }
+
+        /// <summary>Queues a slow-service alert while its building still needs attention.</summary>
+        public static void ShowQueueWarning(string title, string message, Func<bool> stillRelevant,
+            Func<bool> canMove, Action move)
+        {
+            if (stillRelevant())
+                GetToast().ShowQueueWarning(title, message, stillRelevant, canMove, move);
+        }
+
+        private static NotificationToast GetToast()
+        {
             if (_toast == null)
             {
                 var canvas = Object.Instantiate(Resources.Load<GameObject>("NotificationToast"));
@@ -20,7 +35,7 @@ namespace ResortEmpire.UI
                 _toast = canvas.GetComponentInChildren<NotificationToast>();
             }
 
-            _toast.Show(title, message);
+            return _toast;
         }
     }
 }

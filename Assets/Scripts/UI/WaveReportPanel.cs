@@ -27,10 +27,10 @@ namespace ResortEmpire.UI
         private const float StarSpacing = 10f;
         private const float BreakdownSpacing = 48f;
 
-        private static readonly Color BackgroundColor = new(0.07f, 0.18f, 0.24f, 1f);
-        private static readonly Color PerfectColor = new(1f, 0.78f, 0.34f, 1f);
+        private static readonly Color BackgroundColor = new Color32(0xD6, 0xF0, 0xFB, 0xFF);
+        private static readonly Color PerfectColor = UIPalette.Warning;
         private static readonly Color EarnedStarColor = Color.white;
-        private static readonly Color MissingStarColor = new(1f, 1f, 1f, 0.16f);
+        private static readonly Color MissingStarColor = new(UIPalette.Text.r, UIPalette.Text.g, UIPalette.Text.b, 0.18f);
 
         private static WaveReportPanel _instance;
 

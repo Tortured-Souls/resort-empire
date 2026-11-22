@@ -23,12 +23,17 @@ namespace ResortEmpire.UI
         [Header("Icons")]
         [SerializeField] private Sprite coinIcon;
         [SerializeField] private Sprite gemIcon;
+        [SerializeField] private Sprite energyIcon;
         [SerializeField] private Sprite counterBackground;
 
         [SerializeField] private int coins;
+        [Tooltip("Wallet the coin counter shows. Found in the scene when left empty.")]
+        [SerializeField] private CoinWallet coinWallet;
         private Counter coinCounter;
         private Counter gemCounter;
+        private Counter energyCounter;
         private GemWallet gemWallet;
+        private EnergyWallet energyWallet;
 
         // Counter layout, in canvas units. The icon overlaps the left end of the pill.
         private const float CounterHeight = 56f;
@@ -53,7 +58,18 @@ namespace ResortEmpire.UI
             if (coinsSlot != null)
             {
                 coinCounter = CreateCounter(coinsSlot, "CoinCounter", "CoinIcon", coinIcon);
-                SetCoins(coins);
+                if (coinWallet == null)
+                    coinWallet = FindAnyObjectByType<CoinWallet>();
+
+                if (coinWallet != null)
+                {
+                    coinWallet.BalanceChanged += UpdateCoinCount;
+                    UpdateCoinCount(coinWallet.Balance);
+                }
+                else
+                {
+                    SetCount(coinCounter, coins);
+                }
             }
 
             if (gemsSlot != null)
@@ -66,11 +82,23 @@ namespace ResortEmpire.UI
                 gemWallet.BalanceChanged += UpdateGemCount;
                 UpdateGemCount(gemWallet.Balance);
             }
+
+            if (displaySlot != null)
+            {
+                energyCounter = CreateCounter(displaySlot, "EnergyCounter", "EnergyIcon", energyIcon);
+                energyWallet = GetComponent<EnergyWallet>();
+                if (energyWallet == null)
+                    energyWallet = gameObject.AddComponent<EnergyWallet>();
+
+                energyWallet.BalanceChanged += UpdateEnergyCount;
+                UpdateEnergyCount(energyWallet.Balance);
+            }
         }
 
 #if UNITY_EDITOR
         private const string CoinIconPath = "Assets/Art/UI/CoinIcon.png";
         private const string GemIconPath = "Assets/Art/UI/GemIcon.png";
+        private const string EnergyIconPath = "Assets/Art/UI/EnergyIcon.png";
         private const string CounterBackgroundPath = "Assets/Art/UI/CounterBackground.png";
 
         // Fills in missing icon references so the counters never fall back to a blank white Image.
@@ -80,6 +108,8 @@ namespace ResortEmpire.UI
                 coinIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(CoinIconPath);
             if (gemIcon == null)
                 gemIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(GemIconPath);
+            if (energyIcon == null)
+                energyIcon = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(EnergyIconPath);
             if (counterBackground == null)
                 counterBackground = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(CounterBackgroundPath);
         }
@@ -174,14 +204,34 @@ namespace ResortEmpire.UI
         {
             if (gemWallet != null)
                 gemWallet.BalanceChanged -= UpdateGemCount;
+            if (coinWallet != null)
+                coinWallet.BalanceChanged -= UpdateCoinCount;
+            if (energyWallet != null)
+                energyWallet.BalanceChanged -= UpdateEnergyCount;
         }
 
-        /// <summary>Updates the number displayed in the coin counter.</summary>
+        /// <summary>
+        /// Sets the coin amount. With a <see cref="CoinWallet"/> this sets the wallet balance and
+        /// the counter follows it; without one only the counter changes.
+        /// </summary>
         public void SetCoins(int amount)
         {
             coins = Mathf.Max(0, amount);
-            SetCount(coinCounter, coins);
+            if (coinWallet != null)
+                coinWallet.SetBalance(coins);
+            else
+                SetCount(coinCounter, coins);
         }
+
+        /// <summary>Updates the coin counter when the wallet balance changes (SCRUM-145).</summary>
+        private void UpdateCoinCount(int amount)
+        {
+            coins = amount;
+            SetCount(coinCounter, amount);
+        }
+
+        /// <summary>The wallet the coin counter shows.</summary>
+        public CoinWallet CoinWallet => coinWallet;
 
         /// <summary>Updates the gem counter when the wallet balance changes.</summary>
         private void UpdateGemCount(int amount)
@@ -189,8 +239,17 @@ namespace ResortEmpire.UI
             SetCount(gemCounter, amount);
         }
 
+        /// <summary>Updates the Energy counter when the wallet balance changes.</summary>
+        private void UpdateEnergyCount(int amount)
+        {
+            SetCount(energyCounter, amount);
+        }
+
         /// <summary>The wallet used by gameplay systems to award or spend gems.</summary>
         public GemWallet Wallet => gemWallet;
+
+        /// <summary>The wallet used by gameplay systems to award or spend Energy.</summary>
+        public EnergyWallet EnergyWallet => energyWallet;
 
         /// <summary>Reputation widget slot (SCRUM-81).</summary>
         public RectTransform ReputationSlot => reputationSlot;
@@ -204,7 +263,7 @@ namespace ResortEmpire.UI
         /// <summary>Gems widget slot (SCRUM-79).</summary>
         public RectTransform GemsSlot => gemsSlot;
 
-        /// <summary>Top right display slot (SCRUM-66).</summary>
+        /// <summary>Top right display slot, holds the Energy counter (SCRUM-66).</summary>
         public RectTransform DisplaySlot => displaySlot;
 
         /// <summary>Shows or hides the whole HUD, e.g. while a full-screen menu is open.</summary>

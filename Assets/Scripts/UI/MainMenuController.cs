@@ -8,7 +8,7 @@ namespace ResortEmpire.UI
         [SerializeField] private string gameWorldScene = "GameWorld";
         [SerializeField] private string settingsScene = "Settings";
 
-        /// <summary>Loads the game world scene.</summary>
+        /// <summary>Loads the game world scene, continuing the saved game when there is one.</summary>
         public void PlayGame()
         {
             SceneManager.LoadScene(gameWorldScene);
