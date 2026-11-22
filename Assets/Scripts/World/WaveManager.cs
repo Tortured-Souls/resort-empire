@@ -6,9 +6,10 @@ using UnityEngine;
 namespace ResortEmpire.World
 {
     /// <summary>
-    /// Runs the wave loop: a cruise ship sails in and docks, the player starts the wave with its
-    /// guests or rejects the ship, and a started wave runs until every guest is served. Reports
-    /// AWAITING_WAVE and finished waves to the <see cref="BuildingSystem"/>.
+    /// Runs the wave loop: in AWAITING_WAVE the player presses <c>Start Wave</c>, the cruise ship
+    /// sails in (WAVE_INCOMING), its guests disembark and the wave runs until every guest is
+    /// served (WAVE_ACTIVE), then the resort awaits the next wave. Reports AWAITING_WAVE and
+    /// finished waves to the <see cref="BuildingSystem"/>.
     /// </summary>
     public sealed class WaveManager : MonoBehaviour
     {
@@ -25,7 +26,7 @@ namespace ResortEmpire.World
         private readonly List<Building> _buildings = new();
         private readonly HashSet<NeedType> _servedNeeds = new();
         private readonly List<NeedType> _guestNeeds = new();
-        private WaveState _state = WaveState.WaveIncoming;
+        private WaveState _state = WaveState.AwaitingWave;
         private GameWorldController _world;
         private CruiseShip _ship;
         private int _wave;
@@ -61,7 +62,7 @@ namespace ResortEmpire.World
         }
 
         /// <summary>
-        /// Player action from AWAITING_WAVE: the guests of the docked ship start to disembark.
+        /// Player action from AWAITING_WAVE: the cruise ship sails in with the next wave of guests.
         /// Returns false in any other state.
         /// </summary>
         public bool StartWave()
@@ -71,22 +72,6 @@ namespace ResortEmpire.World
             CollectServices();
             _wave++;
             _arrivalElapsed = 0f;
-            _arrivalOpen = true;
-            SetState(WaveState.WaveActive);
-            // The first guest steps off right away.
-            TickArrival(0f);
-            return true;
-        }
-
-        /// <summary>
-        /// Player action from AWAITING_WAVE: the docked ship sails away with its guests and the
-        /// next one comes in. Returns false in any other state.
-        /// </summary>
-        public bool RejectShip()
-        {
-            if (_state != WaveState.AwaitingWave) return false;
-
-            _ship.SailAway();
             SetState(WaveState.WaveIncoming);
             return true;
         }
@@ -96,9 +81,13 @@ namespace ResortEmpire.World
             switch (_state)
             {
                 case WaveState.WaveIncoming:
-                    // The next ship sets off only once the previous one is gone.
+                    // A ship still leaving after the last wave has to be gone before it sails in again.
                     if (_ship.CurrentPhase == CruiseShip.Phase.Away) _ship.SailIn(incomingSeconds);
-                    else if (_ship.IsDocked) SetState(WaveState.AwaitingWave);
+                    if (!_ship.IsDocked) break;
+                    _arrivalOpen = true;
+                    SetState(WaveState.WaveActive);
+                    // The first guest steps off as soon as the ship docks.
+                    TickArrival(0f);
                     break;
 
                 case WaveState.WaveActive:
@@ -177,7 +166,7 @@ namespace ResortEmpire.World
 
             _guests.Clear();
             buildingSystem.CompleteWave(_wave);
-            SetState(WaveState.WaveIncoming);
+            SetState(WaveState.AwaitingWave);
         }
 
         private void SetState(WaveState next)

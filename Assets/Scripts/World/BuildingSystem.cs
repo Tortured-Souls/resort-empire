@@ -10,8 +10,8 @@ namespace ResortEmpire.World
     /// unlocks plots after waves and sells them for coins. There is always one worker fewer than
     /// buildings, each worker stands on a building, and moving one is free and instant in any
     /// state (build document §4.5). The wave manager reports progress through
-    /// <see cref="CompleteWave"/> and <see cref="SetAwaitingWave"/>; plots can only be bought in
-    /// AWAITING_WAVE, while a cruise ship waits at the dock.
+    /// <see cref="CompleteWave"/> and <see cref="SetAwaitingWave"/>; plots can only be bought
+    /// while awaiting the next wave.
     /// </summary>
     public sealed class BuildingSystem : MonoBehaviour
     {
