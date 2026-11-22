@@ -68,7 +68,7 @@ namespace ResortEmpire.World
             foreach (var building in _buildings)
             {
                 Subscribe(building);
-                if (building.HasLongQueue) OnLongQueueStarted(building);
+                if (building.NeedsQueueWarning) OnQueueWarningStarted(building);
             }
         }
 
@@ -81,7 +81,7 @@ namespace ResortEmpire.World
             foreach (var building in _buildings)
             {
                 building.Clicked -= OnBuildingClicked;
-                building.LongQueueStarted -= OnLongQueueStarted;
+                building.QueueWarningStarted -= OnQueueWarningStarted;
             }
         }
 
@@ -146,8 +146,8 @@ namespace ResortEmpire.World
             if (from == to || !_buildings.Contains(from) || !_buildings.Contains(to)) return false;
             if (!from.HasWorker || to.HasWorker) return false;
 
-            from.SetWorker(false);
             to.SetWorker(true);
+            from.SetWorker(false);
             // Show the cost of the move as well as the gain (AC2b).
             Notifications.Show(to.DisplayName, $"Full speed now. {from.DisplayName} is empty and slow.");
             return true;
@@ -162,17 +162,17 @@ namespace ResortEmpire.World
         private void Subscribe(Building building)
         {
             building.Clicked += OnBuildingClicked;
-            building.LongQueueStarted += OnLongQueueStarted;
+            building.QueueWarningStarted += OnQueueWarningStarted;
         }
 
-        private void OnLongQueueStarted(Building building)
+        private void OnQueueWarningStarted(Building building)
         {
             int episode = building.QueueEpisode;
             Notifications.ShowQueueWarning($"{building.DisplayName}: slow service",
-                "More than four guests are waiting.",
+                $"At least {Building.QueueWarningThreshold} guests are waiting.",
                 () => this != null && isActiveAndEnabled && building != null && building.isActiveAndEnabled
-                    && building.HasLongQueue && building.QueueEpisode == episode,
-                () => !building.HasWorker && HasWorkerToMove(),
+                    && building.NeedsQueueWarning && building.QueueEpisode == episode,
+                HasWorkerToMove,
                 () => MoveRandomWorkerTo(building));
         }
 
@@ -188,7 +188,7 @@ namespace ResortEmpire.World
 
         private void MoveRandomWorkerTo(Building target)
         {
-            if (target.HasWorker || !target.HasLongQueue) return;
+            if (!target.NeedsQueueWarning) return;
 
             // Reservoir sampling gives each currently staffed building the same chance, without a list.
             Building donor = null;

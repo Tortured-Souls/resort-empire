@@ -11,7 +11,7 @@ namespace ResortEmpire.World
     /// <see cref="ServiceDuration"/>: full speed with a worker, slower without one (build
     /// document §4.4–4.5). Workers are assigned by <see cref="BuildingSystem"/>; a tap on the
     /// building raises <see cref="Clicked"/>, so it needs a <see cref="Collider2D"/>.
-    /// A floating badge marks a queue of more than four guests waiting at the building.
+    /// A floating badge marks an unstaffed building with at least three guests waiting.
     /// </summary>
     public class Building : MonoBehaviour, IPointerClickHandler
     {
@@ -20,7 +20,7 @@ namespace ResortEmpire.World
         /// <summary>worker_slots: workers one building takes, the same for every building in the prototype.</summary>
         public const int WorkerSlots = 1;
 
-        private const int LongQueueThreshold = 4;
+        internal const int QueueWarningThreshold = 3;
 
         [SerializeField] private string displayName = "Building";
         [SerializeField] private Transform entrance;
@@ -52,8 +52,8 @@ namespace ResortEmpire.World
         private bool _hasWorker;
         private SlowServiceIndicator _indicator;
 
-        internal event Action<Building> LongQueueStarted;
-        internal bool HasLongQueue => QueueCount > LongQueueThreshold;
+        internal event Action<Building> QueueWarningStarted;
+        internal bool NeedsQueueWarning { get; private set; }
         // Distinguishes a new backlog from a previous warning still on screen or waiting to be shown.
         internal int QueueEpisode { get; private set; }
 
@@ -112,12 +112,7 @@ namespace ResortEmpire.World
         {
             if (visitor == null || _queue.Contains(visitor) || _visitors.Contains(visitor)) return;
             _queue.Add(visitor);
-            if (QueueCount == LongQueueThreshold + 1)
-            {
-                QueueEpisode++;
-                RefreshServiceIndicator();
-                LongQueueStarted?.Invoke(this);
-            }
+            RefreshQueueWarning();
         }
 
         public Vector3 QueuePosition(GameObject visitor)
@@ -185,7 +180,7 @@ namespace ResortEmpire.World
         private void RemoveQueuedAt(int index)
         {
             _queue.RemoveAt(index);
-            if (QueueCount == LongQueueThreshold) RefreshServiceIndicator();
+            RefreshQueueWarning();
         }
 
         // Raises the level by one; paying for the upgrade is up to the caller.
@@ -209,6 +204,7 @@ namespace ResortEmpire.World
         {
             _hasWorker = hasWorker;
             ApplyWorkerFigure();
+            RefreshQueueWarning();
         }
 
         private void ApplyWorkerFigure()
@@ -216,10 +212,20 @@ namespace ResortEmpire.World
             if (workerFigure != null) workerFigure.enabled = _hasWorker;
         }
 
-        private void RefreshServiceIndicator()
+        private void RefreshQueueWarning()
         {
-            if (_indicator != null) _indicator.gameObject.SetActive(HasLongQueue);
-            else if (HasLongQueue) _indicator = SlowServiceIndicator.Create(this);
+            bool needed = !HasWorker && QueueCount >= QueueWarningThreshold;
+            if (needed == NeedsQueueWarning) return;
+            NeedsQueueWarning = needed;
+
+            if (_indicator != null) _indicator.gameObject.SetActive(needed);
+            else if (needed) _indicator = SlowServiceIndicator.Create(this);
+
+            if (needed)
+            {
+                QueueEpisode++;
+                QueueWarningStarted?.Invoke(this);
+            }
         }
 
         protected virtual void OnVisitorEntered(GameObject visitor) { }
