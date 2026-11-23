@@ -46,6 +46,9 @@ namespace ResortEmpire.NPC
             _ => 1
         };
 
+        /// <summary>Name of <paramref name="type"/> shown in the UI, e.g. "Ocean View".</summary>
+        public static string DisplayName(NeedType type) => type == NeedType.OceanView ? "Ocean View" : type.ToString();
+
         internal void Wait(float deltaTime) => waitingSeconds += deltaTime;
         internal void Complete() => isCompleted = true;
     }

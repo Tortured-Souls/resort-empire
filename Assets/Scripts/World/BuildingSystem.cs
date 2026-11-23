@@ -10,8 +10,8 @@ namespace ResortEmpire.World
     /// unlocks plots after waves and sells them for coins. There is always one worker fewer than
     /// buildings, each worker stands on a building, and moving one is free and instant in any
     /// state (build document §4.5). The wave manager reports progress through
-    /// <see cref="CompleteWave"/> and <see cref="SetAwaitingWave"/>; plots can only be bought
-    /// while awaiting the next wave.
+    /// <see cref="CompleteWave"/> and <see cref="SetUpgradesAllowed"/>; plots can only be bought
+    /// and buildings upgraded between waves, in AWAITING_WAVE and UPGRADE.
     /// </summary>
     public sealed class BuildingSystem : MonoBehaviour
     {
@@ -32,7 +32,7 @@ namespace ResortEmpire.World
         private readonly List<Building> _buildings = new();
         private readonly Dictionary<Building, int> _suggestedLevel = new();
         private int _completedWaves;
-        private bool _awaitingWave = true;
+        private bool _upgradesAllowed = true;
 
         /// <summary>Raised after a plot was bought and its building placed.</summary>
         public event Action<Building> BuildingPurchased;
@@ -41,8 +41,8 @@ namespace ResortEmpire.World
         public event Action<Building> BuildingUpgraded;
 
         /// <summary>
-        /// Raised in AWAITING_WAVE when the player can newly afford the next level of a building,
-        /// once per building and level. The upgrade suggestion panel listens to it.
+        /// Raised in AWAITING_WAVE or UPGRADE when the player can newly afford the next level of a
+        /// building, once per building and level. The upgrade suggestion panel listens to it.
         /// </summary>
         public event Action<Building> UpgradeAvailable;
 
@@ -61,12 +61,15 @@ namespace ResortEmpire.World
         /// <summary>Number of the last completed wave, 0 before the first one.</summary>
         public int CompletedWaves => _completedWaves;
 
-        /// <summary>True in AWAITING_WAVE, the only time plots can be bought.</summary>
-        public bool IsAwaitingWave => _awaitingWave;
+        /// <summary>
+        /// True in AWAITING_WAVE and UPGRADE, the only states in which plots can be bought and
+        /// buildings upgraded.
+        /// </summary>
+        public bool UpgradesAllowed => _upgradesAllowed;
 
         /// <summary>True when <paramref name="building"/> can be upgraded right now.</summary>
         public bool CanUpgrade(Building building) =>
-            building != null && _awaitingWave && building.CanUpgrade && wallet != null && wallet.CanAfford(building.UpgradePrice);
+            building != null && _upgradesAllowed && building.CanUpgrade && wallet != null && wallet.CanAfford(building.UpgradePrice);
 
         private void Awake()
         {
@@ -140,18 +143,18 @@ namespace ResortEmpire.World
             RefreshPlots();
         }
 
-        /// <summary>Called by the wave manager when entering or leaving AWAITING_WAVE.</summary>
-        public void SetAwaitingWave(bool awaiting)
+        /// <summary>Called by the wave manager when entering or leaving AWAITING_WAVE or UPGRADE.</summary>
+        public void SetUpgradesAllowed(bool allowed)
         {
-            _awaitingWave = awaiting;
-            if (!awaiting && purchasePanel != null) purchasePanel.Hide();
-            if (awaiting) SuggestUpgrades();
+            _upgradesAllowed = allowed;
+            if (!allowed && purchasePanel != null) purchasePanel.Hide();
+            if (allowed) SuggestUpgrades();
         }
 
         /// <summary>Buys <paramref name="plot"/>: pays, places the building and staffs it with a new worker.</summary>
         public bool TryPurchase(BuildingPlot plot)
         {
-            if (plot == null || !_awaitingWave || plot.State != PlotState.Available) return false;
+            if (plot == null || !_upgradesAllowed || plot.State != PlotState.Available) return false;
             if (wallet == null || !wallet.CanAfford(plot.Price)) return false;
             if (!plot.TryBuild(out var building)) return false;
 
@@ -232,7 +235,7 @@ namespace ResortEmpire.World
             if (donor != null && TryMoveWorker(donor, target) && workerPanel != null) workerPanel.Refresh();
         }
 
-        /// <summary>Upgrades <paramref name="building"/> by one level and pays for it. Only in AWAITING_WAVE.</summary>
+        /// <summary>Upgrades <paramref name="building"/> by one level and pays for it. Only in AWAITING_WAVE or UPGRADE.</summary>
         public bool TryUpgrade(Building building)
         {
             if (!CanUpgrade(building) || !_buildings.Contains(building)) return false;
@@ -253,7 +256,7 @@ namespace ResortEmpire.World
         // Suggests every upgrade the player can afford, each level only once.
         private void SuggestUpgrades()
         {
-            if (!_awaitingWave) return;
+            if (!_upgradesAllowed) return;
 
             foreach (var building in _buildings)
             {
@@ -269,7 +272,7 @@ namespace ResortEmpire.World
 
         private void OnPlotClicked(BuildingPlot plot)
         {
-            if (!_awaitingWave || !plot.IsForSale || purchasePanel == null) return;
+            if (!_upgradesAllowed || !plot.IsForSale || purchasePanel == null) return;
             if (workerPanel != null) workerPanel.Hide();
             purchasePanel.Show(plot);
         }
