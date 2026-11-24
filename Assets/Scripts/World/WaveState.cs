@@ -24,14 +24,14 @@ namespace ResortEmpire.World
         WaveActive,
 
         /// <summary>
-        /// The arrival is closed and every guest has been served. Wave Satisfaction, rating and
-        /// rewards are worked out from the waiting history, then the guests leave. Lasts one frame.
+        /// The arrival is closed and every guest has been served; the wave is evaluated. Lasts one
+        /// frame, then the result follows.
         /// </summary>
         WaveResolving,
 
         /// <summary>
-        /// The result of the wave (S4) waits until the player claims the rewards; claiming pays
-        /// them out and ends the wave.
+        /// The result of the wave (S4) waits until the player claims the rewards; claiming ends
+        /// the wave.
         /// </summary>
         WaveComplete,
 

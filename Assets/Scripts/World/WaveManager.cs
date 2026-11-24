@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ResortEmpire.NPC;
-using ResortEmpire.UI;
 using UnityEngine;
 
 namespace ResortEmpire.World
@@ -9,11 +8,11 @@ namespace ResortEmpire.World
     /// <summary>
     /// Runs the wave loop (build document §4.3): in AWAITING_WAVE the player presses
     /// <c>Start Wave</c>, the cruise ship sails in (WAVE_INCOMING), its guests disembark and the
-    /// wave runs until every guest is served (WAVE_ACTIVE). WAVE_RESOLVING works out the
-    /// <see cref="Report"/>, WAVE_COMPLETE waits for the player to claim its rewards, which ends
-    /// the wave, and UPGRADE for them to upgrade or skip; then the resort awaits the next wave. An
-    /// active wave pauses while the app is in the background (WAVE_PAUSED). Reports completed
-    /// waves and the states that allow upgrades to the <see cref="BuildingSystem"/>.
+    /// wave runs until every guest is served (WAVE_ACTIVE). After WAVE_RESOLVING, WAVE_COMPLETE
+    /// waits for the player to claim the rewards, which ends the wave, and UPGRADE for them to
+    /// upgrade or skip; then the resort awaits the next wave. An active wave pauses while the app
+    /// is in the background (WAVE_PAUSED). Reports completed waves and the states that allow
+    /// upgrades to the <see cref="BuildingSystem"/>.
     /// </summary>
     public sealed class WaveManager : MonoBehaviour
     {
@@ -25,20 +24,14 @@ namespace ResortEmpire.World
         [SerializeField, Range(45f, 180f)] private float waveTimer = 90f;
         [Tooltip("Length of WAVE_INCOMING: the cruise ship's arrival animation.")]
         [SerializeField, Range(2f, 4f)] private float incomingSeconds = 3f;
-        [SerializeField] private SatisfactionSettings satisfaction = SatisfactionSettings.Default;
 
         private readonly List<CasualTourist> _guests = new();
         private readonly List<Building> _buildings = new();
         private readonly HashSet<NeedType> _servedNeeds = new();
         private readonly List<NeedType> _guestNeeds = new();
-        private readonly List<Need> _waveNeeds = new();
-        private readonly List<Need> _needsOfType = new();
         private WaveState _state = WaveState.AwaitingWave;
         private GameWorldController _world;
         private CruiseShip _ship;
-        private CoinWallet _coinWallet;
-        private EnergyWallet _energyWallet;
-        private WaveReport _report;
         private int _wave;
         private float _arrivalElapsed;
         private bool _arrivalOpen;
@@ -47,8 +40,8 @@ namespace ResortEmpire.World
         public event Action<WaveState, WaveState> StateChanged;
 
         /// <summary>
-        /// Raised on entering WAVE_COMPLETE. The result screen (S4) shows <see cref="Report"/> and
-        /// calls <see cref="ClaimRewards"/>.
+        /// Raised on entering WAVE_COMPLETE. The wave report (S4) shows the result of
+        /// <see cref="Wave"/> and calls <see cref="ClaimRewards"/>.
         /// </summary>
         public event Action WaveCompleted;
 
@@ -66,28 +59,23 @@ namespace ResortEmpire.World
         /// <summary>True during the first phase of WAVE_ACTIVE, while guests still disembark.</summary>
         public bool IsArrivalOpen => _arrivalOpen;
 
-        /// <summary>Guests of the current wave that have already disembarked.</summary>
-        public IReadOnlyList<CasualTourist> Guests => _guests;
-
         /// <summary>
-        /// Result of the last resolved wave: Wave Satisfaction, rating, rewards and the breakdown
-        /// per need. Null before the first wave is resolved.
+        /// Guests of the current wave that have already disembarked. They stay until the rewards
+        /// are claimed, so the wave report can still read the waiting history of their needs.
         /// </summary>
-        public WaveReport Report => _report;
+        public IReadOnlyList<CasualTourist> Guests => _guests;
 
         private void Start()
         {
             _world = GameWorldController.Instance;
             _ship = _world != null ? _world.CruiseShip : null;
-            _coinWallet = FindAnyObjectByType<CoinWallet>();
-            _energyWallet = FindAnyObjectByType<EnergyWallet>();
-            if (_ship != null && guestPrefab != null && buildingSystem != null && _coinWallet != null && _energyWallet != null)
+            if (_ship != null && guestPrefab != null && buildingSystem != null)
             {
                 buildingSystem.SetUpgradesAllowed(AllowsUpgrades(_state));
                 return;
             }
 
-            Debug.LogError($"{nameof(WaveManager)} needs a {nameof(GameWorldController)} with a cruise ship, a guest prefab, a {nameof(BuildingSystem)}, a {nameof(CoinWallet)} and an {nameof(EnergyWallet)}.", this);
+            Debug.LogError($"{nameof(WaveManager)} needs a {nameof(GameWorldController)} with a cruise ship, a guest prefab and a {nameof(BuildingSystem)}.", this);
             enabled = false;
         }
 
@@ -115,21 +103,19 @@ namespace ResortEmpire.World
         }
 
         /// <summary>
-        /// Player action from WAVE_COMPLETE (<c>Claim Rewards</c>): pays out the coins and Energy of
-        /// <see cref="Report"/>, which ends the wave, and the upgrade suggestion follows. Returns
-        /// false in any other state.
+        /// Player action from WAVE_COMPLETE (<c>Claim Rewards</c>): the guests of the wave leave,
+        /// the wave ends and the upgrade suggestion follows. Returns false in any other state.
         /// </summary>
         public bool ClaimRewards()
         {
             if (_state != WaveState.WaveComplete) return false;
 
-            _coinWallet.AddCoins(_report.CoinsEarned);
-            _energyWallet.AddEnergy(_report.EnergyEarned);
-            // The wave counts as completed together with its rewards, so a game closed before
-            // claiming replays it. It also opens the area unlock (S9) for UPGRADE.
+            RemoveGuests();
+            // The wave counts as completed only once its rewards are claimed, so a game closed on
+            // the report replays it. It also opens the area unlock (S9) for UPGRADE.
             buildingSystem.CompleteWave(_wave);
             SetState(WaveState.Upgrade);
-            // Until the upgrade suggestion (SCRUM-155) listens, there is nothing to upgrade or skip.
+            // Until the upgrade suggestion (SCRUM-154) listens, there is nothing to upgrade or skip.
             if (UpgradeOffered != null) UpgradeOffered.Invoke();
             else FinishUpgrade();
             return true;
@@ -248,57 +234,12 @@ namespace ResortEmpire.World
             return true;
         }
 
-        // The result comes from the waiting history the guests carry, so they leave only after it.
         private void ResolveWave()
         {
-            _report = CreateReport();
-            RemoveGuests();
             SetState(WaveState.WaveComplete);
-            // Until the result screen (SCRUM-154) listens, there is nothing to show before claiming.
+            // Until the wave report (SCRUM-172) listens, there is nothing to show before claiming.
             if (WaveCompleted != null) WaveCompleted.Invoke();
             else ClaimRewards();
-        }
-
-        // Wave Satisfaction, rating and rewards (build document §4.4, §4.6, §4.8). Every guest has
-        // been served, so the units of the wave are all needs its guests carried.
-        private WaveReport CreateReport()
-        {
-            _waveNeeds.Clear();
-            foreach (var guest in _guests)
-            {
-                if (guest != null) _waveNeeds.AddRange(guest.Needs.Needs);
-            }
-
-            var report = new WaveReport
-            {
-                Wave = _wave,
-                GuestsServed = _guests.Count,
-                GuestsTotal = _guests.Count,
-                Satisfaction = WaveSatisfaction.Calculate(_waveNeeds, satisfaction),
-                NeedResults = ResultsByNeed()
-            };
-            report.CoinsEarned = CoinWallet.RewardForWave(_waveNeeds.Count, report.Stars, report.IsPerfect);
-            report.EnergyEarned = EnergyWallet.RewardForStars(report.Stars);
-            return report;
-        }
-
-        // Breakdown of the report: satisfaction of every need type the guests had, in NeedType order.
-        private List<NeedResult> ResultsByNeed()
-        {
-            var results = new List<NeedResult>();
-            foreach (NeedType type in Enum.GetValues(typeof(NeedType)))
-            {
-                _needsOfType.Clear();
-                foreach (var need in _waveNeeds)
-                {
-                    if (need.Type == type) _needsOfType.Add(need);
-                }
-
-                if (_needsOfType.Count > 0)
-                    results.Add(new NeedResult(Need.DisplayName(type), WaveSatisfaction.Calculate(_needsOfType, satisfaction)));
-            }
-
-            return results;
         }
 
         private void RemoveGuests()

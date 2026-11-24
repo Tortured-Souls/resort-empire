@@ -6,10 +6,6 @@ namespace ResortEmpire.UI
     /// <summary>Tracks the current coin balance and notifies listeners when it changes.</summary>
     public sealed class CoinWallet : MonoBehaviour
     {
-        // coins_per_unit and coins_rating_mult for 1★..5★ and Perfect (build document §4.8, TUNING).
-        private const int CoinsPerUnit = 16;
-        private static readonly float[] CoinsForRating = { 0.4f, 0.6f, 0.8f, 1.0f, 1.2f, 1.3f };
-
         [SerializeField, Min(0)] private int balance;
 
         /// <summary>Raised with the new balance whenever it changes.</summary>
@@ -21,16 +17,6 @@ namespace ResortEmpire.UI
         private void Awake()
         {
             balance = Mathf.Max(0, balance);
-        }
-
-        /// <summary>
-        /// Coins for a finished wave: its need <paramref name="units"/> × coins_per_unit × the
-        /// multiplier of a <paramref name="stars"/> (1–5) or Perfect rating.
-        /// </summary>
-        public static int RewardForWave(int units, int stars, bool perfect)
-        {
-            int tier = perfect ? CoinsForRating.Length - 1 : Mathf.Clamp(stars, 1, CoinsForRating.Length - 1) - 1;
-            return Mathf.RoundToInt(Mathf.Max(0, units) * CoinsPerUnit * CoinsForRating[tier]);
         }
 
         /// <summary>Adds coins, e.g. the reward at the end of a wave.</summary>
