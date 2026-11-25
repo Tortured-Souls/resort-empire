@@ -5219,6 +5219,8 @@ MonoBehaviour:
   cardPrefab: {fileID: 522178552440354660, guid: 2d0fc26dea8fe43649d8508d52e98b56, type: 3}
   needIcons: {fileID: 11400000, guid: a97933405963c428a99eae218ddb20c4, type: 2}
   workerAvatar: {fileID: 21300000, guid: 0fad74ad9e49d435f88cd109bab224fb, type: 3}
+  upgradeButtonPrefab: {fileID: 98887815978150877, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
+  upgradeButtonHeight: 56
 --- !u!1 &1449444137
 GameObject:
   m_ObjectHideFlags: 0

@@ -77,7 +77,13 @@ namespace ResortEmpire.World
         {
             if (wallet != null) wallet.BalanceChanged += OnBalanceChanged;
             if (purchasePanel != null) purchasePanel.BuyClicked += OnBuyClicked;
-            if (workerPanel != null) workerPanel.MoveClicked += OnMoveClicked;
+            if (workerPanel != null)
+            {
+                workerPanel.MoveClicked += OnMoveClicked;
+                workerPanel.UpgradeClicked += OnUpgradeClicked;
+                workerPanel.UpgradeOfferFor = UpgradeOfferFor;
+            }
+
             foreach (var plot in plots) plot.Clicked += OnPlotClicked;
             foreach (var building in _buildings)
             {
@@ -90,7 +96,13 @@ namespace ResortEmpire.World
         {
             if (wallet != null) wallet.BalanceChanged -= OnBalanceChanged;
             if (purchasePanel != null) purchasePanel.BuyClicked -= OnBuyClicked;
-            if (workerPanel != null) workerPanel.MoveClicked -= OnMoveClicked;
+            if (workerPanel != null)
+            {
+                workerPanel.MoveClicked -= OnMoveClicked;
+                workerPanel.UpgradeClicked -= OnUpgradeClicked;
+                workerPanel.UpgradeOfferFor = null;
+            }
+
             foreach (var plot in plots) plot.Clicked -= OnPlotClicked;
             foreach (var building in _buildings)
             {
@@ -289,6 +301,22 @@ namespace ResortEmpire.World
         private void OnMoveClicked(Building from, Building to)
         {
             if (TryMoveWorker(from, to)) workerPanel.Hide();
+        }
+
+        // Upgrade button of the building panel: hidden during a wave, disabled without enough
+        // coins or at max level (SCRUM-166).
+        private WorkerAllocationPanel.UpgradeOffer UpgradeOfferFor(Building building)
+        {
+            if (building == null || !IsAwaitingWave) return WorkerAllocationPanel.UpgradeOffer.Hidden;
+            if (!building.CanUpgrade) return WorkerAllocationPanel.UpgradeOffer.MaxLevel;
+            return CanUpgrade(building)
+                ? WorkerAllocationPanel.UpgradeOffer.Available
+                : WorkerAllocationPanel.UpgradeOffer.NotAffordable;
+        }
+
+        private void OnUpgradeClicked(Building building)
+        {
+            if (TryUpgrade(building) && workerPanel != null) workerPanel.Refresh();
         }
 
         private void OnBalanceChanged(int balance)
