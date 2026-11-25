@@ -164,9 +164,7 @@ namespace ResortEmpire.World
             if (sign != null)
             {
                 sign.gameObject.SetActive(!unlocked);
-                sign.text = _state == PlotState.Locked
-                    ? $"{displayName}\n<size=85%>after wave {unlockAfterWave}</size>"
-                    : $"{displayName}\n<size=85%>{price:N0} coins</size>";
+                sign.text = SignText(_state, displayName, unlockAfterWave, price);
             }
 
             if (marker != null)
@@ -175,5 +173,16 @@ namespace ResortEmpire.World
                 marker.localPosition = _markerBase;
             }
         }
+
+        /// <summary>
+        /// Sign text for a plot in <paramref name="state"/>: a locked plot says it is locked and
+        /// when it opens, an open one that the player can build there and for how much.
+        /// </summary>
+        public static string SignText(PlotState state, string name, int unlockAfterWave, int price) => state switch
+        {
+            PlotState.Locked => $"{name}\n<size=85%>Locked: after wave {unlockAfterWave}</size>",
+            PlotState.Available or PlotState.NotAffordable => $"{name}\n<size=85%>Build here: {price:N0} coins</size>",
+            _ => name
+        };
     }
 }
