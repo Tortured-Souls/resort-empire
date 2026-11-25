@@ -99,8 +99,11 @@ namespace ResortEmpire.NPC
 
                 case NpcState.Waiting:
                     need.Wait(deltaTime);
+                    // Guests behind the visible part of the queue wait out of sight (SCRUM-178).
+                    _renderer.enabled = _target.IsShownInQueue(gameObject);
                     if (MoveTo(_target.QueuePosition(gameObject), deltaTime) && _target.TryEnter(gameObject))
                     {
+                        _renderer.enabled = true;
                         _state.SetState(NpcState.WalkingToSeat);
                     }
                     break;

@@ -42,6 +42,8 @@ namespace ResortEmpire.World
         [Tooltip("Worker standing at the building; hidden while nobody works here.")]
         [SerializeField] private SpriteRenderer workerFigure;
         [SerializeField] private Vector2 queueStep = new(-0.3f, -0.2f);
+        [Tooltip("Guests shown standing in the queue. Guests behind them keep waiting, out of sight, and a +N label counts them.")]
+        [SerializeField, Min(1)] private int visibleQueue = 4;
 
         [Header("Visitor pivots")]
         [Tooltip("Where visitors show while using the building, one per slot; each pivot marks the visitor's feet. Visitors beyond the pivot count stay inside, hidden.")]
@@ -62,6 +64,7 @@ namespace ResortEmpire.World
         private int _visitorCount;
         private bool _hasWorker;
         private SlowServiceIndicator _indicator;
+        private QueueOverflowLabel _overflowLabel;
 
         internal event Action<Building> QueueWarningStarted;
         internal bool NeedsQueueWarning { get; private set; }
@@ -125,6 +128,25 @@ namespace ResortEmpire.World
 
         public int QueueCount => _queue.Count;
 
+        /// <summary>Guests shown standing in the queue; the rest wait out of sight (SCRUM-178).</summary>
+        public int VisibleQueue => visibleQueue;
+
+        /// <summary>Waiting guests beyond <see cref="VisibleQueue"/>, counted by the +N label.</summary>
+        public int HiddenQueueCount => HiddenInQueue(_queue.Count, visibleQueue);
+
+        /// <summary>Guests of a queue of <paramref name="queued"/> that do not fit into <paramref name="visible"/> slots.</summary>
+        public static int HiddenInQueue(int queued, int visible) => Mathf.Max(0, queued - Mathf.Max(1, visible));
+
+        /// <summary>
+        /// True when <paramref name="visitor"/> waits in one of the visible queue slots. The limit is
+        /// only visual: hidden guests keep their place and move up as the queue advances.
+        /// </summary>
+        public bool IsShownInQueue(GameObject visitor)
+        {
+            int index = _queue.IndexOf(visitor);
+            return index >= 0 && index < visibleQueue;
+        }
+
         public int VisitorCount => _visitorCount;
 
         public bool IsFull => _visitorCount >= Capacity;
@@ -140,11 +162,14 @@ namespace ResortEmpire.World
             RefreshQueueWarning();
         }
 
+        // Hidden guests wait on the last visible slot, so a long queue never crosses the island.
         public Vector3 QueuePosition(GameObject visitor)
         {
-            int index = Mathf.Max(0, _queue.IndexOf(visitor));
-            return EntrancePosition + (Vector3)(queueStep * index);
+            int index = Mathf.Clamp(_queue.IndexOf(visitor), 0, visibleQueue - 1);
+            return QueueSlot(index);
         }
+
+        private Vector3 QueueSlot(int index) => EntrancePosition + (Vector3)(queueStep * index);
 
         /// <summary>
         /// Pivot of the slot <paramref name="visitor"/> occupies. False when the slot has no pivot: the
@@ -237,8 +262,24 @@ namespace ResortEmpire.World
             if (workerFigure != null) workerFigure.enabled = _hasWorker;
         }
 
+        // "+N" right behind the last visible guest while more guests wait than are shown.
+        private void RefreshOverflowLabel()
+        {
+            int hidden = HiddenQueueCount;
+            if (hidden <= 0)
+            {
+                if (_overflowLabel != null) _overflowLabel.gameObject.SetActive(false);
+                return;
+            }
+
+            if (_overflowLabel == null) _overflowLabel = QueueOverflowLabel.Create(this);
+            _overflowLabel.gameObject.SetActive(true);
+            _overflowLabel.Show(hidden, QueueSlot(visibleQueue));
+        }
+
         private void RefreshQueueWarning()
         {
+            RefreshOverflowLabel();
             bool needed = !HasWorker && QueueCount >= QueueWarningThreshold;
             if (needed == NeedsQueueWarning) return;
             NeedsQueueWarning = needed;
