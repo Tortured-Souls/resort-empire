@@ -2654,6 +2654,7 @@ GameObject:
   - component: {fileID: 744083733}
   - component: {fileID: 744083734}
   - component: {fileID: 744083735}
+  - component: {fileID: 744083736}
   m_Layer: 5
   m_Name: HUD
   m_TagString: Untagged
@@ -2706,6 +2707,23 @@ MonoBehaviour:
   counterBackground: {fileID: 21300000, guid: 036cf93ba45d4789a198152039566171, type: 3}
   coins: 0
   coinWallet: {fileID: 2057164495}
+--- !u!114 &744083736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 744083732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 869b4589a2f54ff58e40bb209efea42f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.UI.BoostButtons
+  boostSystem: {fileID: 779624771}
+  buildingSystem: {fileID: 779624770}
+  buttonPrefab: {fileID: 98887815978150877, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
+  buttonSize: {x: 200, y: 52}
+  worldOffset: {x: 0, y: 0.15}
 --- !u!114 &744083735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2998,9 +3016,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResortEmpire.World.BoostSystem
   energyWallet: {fileID: 744083735}
   waveManager: {fileID: 1177411212}
-  energyCost: 1
+  energyCost: 3
   duration: 15
   serviceMultiplier: 0.5
+  adEnergyReward: 3
 --- !u!1001 &796398022
 PrefabInstance:
   m_ObjectHideFlags: 0
