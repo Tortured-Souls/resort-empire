@@ -6,12 +6,12 @@ namespace ResortEmpire.Tests
     public class BuildingPlotSignTests
     {
         [Test]
-        public void LockedPlot_SaysItIsLockedAndWhenItOpens()
+        public void LockedPlot_ShowsALockAndWhenItOpens()
         {
             string text = BuildingPlot.SignText(PlotState.Locked, "Pool", 3, 1200);
 
             StringAssert.StartsWith("Pool\n", text);
-            StringAssert.Contains("Locked", text);
+            StringAssert.Contains("🔒", text);
             StringAssert.Contains("wave 3", text);
             StringAssert.DoesNotContain("Build", text);
         }
@@ -23,9 +23,9 @@ namespace ResortEmpire.Tests
             string text = BuildingPlot.SignText(state, "Pool", 3, 1200);
 
             StringAssert.StartsWith("Pool\n", text);
-            StringAssert.Contains("Build here", text);
+            StringAssert.Contains("Build", text);
             StringAssert.Contains(1200.ToString("N0"), text);
-            StringAssert.DoesNotContain("Locked", text);
+            StringAssert.DoesNotContain("🔒", text);
         }
 
         [Test]

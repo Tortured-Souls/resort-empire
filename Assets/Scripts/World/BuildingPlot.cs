@@ -180,8 +180,9 @@ namespace ResortEmpire.World
         /// </summary>
         public static string SignText(PlotState state, string name, int unlockAfterWave, int price) => state switch
         {
-            PlotState.Locked => $"{name}\n<size=85%>Locked: after wave {unlockAfterWave}</size>",
-            PlotState.Available or PlotState.NotAffordable => $"{name}\n<size=85%>Build here: {price:N0} coins</size>",
+            // Short lines keep the auto sized text readable on the small board (SCRUM-152).
+            PlotState.Locked => $"{name}\n<size=85%>🔒 after wave {unlockAfterWave}</size>",
+            PlotState.Available or PlotState.NotAffordable => $"{name}\n<size=85%>Build: {price:N0}</size>",
             _ => name
         };
     }
