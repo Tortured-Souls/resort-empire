@@ -9,7 +9,7 @@ namespace ResortEmpire.UI
 {
     /// <summary>
     /// Speed Up buttons for the Energy boost (SCRUM-168). During a wave every building shows a
-    /// button in front of it: "Speed Up ⚡3" boosts it, a running boost counts down its seconds,
+    /// button below it: "Speed Up: 3 Energy" boosts it, a running boost counts down its seconds,
     /// and without enough Energy the button offers an ad instead. A building that had its boost
     /// this wave shows no button. Lives on a screen space overlay canvas and follows the buildings.
     /// </summary>
@@ -18,9 +18,9 @@ namespace ResortEmpire.UI
         [SerializeField] private BoostSystem boostSystem;
         [SerializeField] private BuildingSystem buildingSystem;
         [SerializeField] private UIButton buttonPrefab;
-        [SerializeField] private Vector2 buttonSize = new(200f, 52f);
-        [Tooltip("Offset from the bottom center of the building sprite, in world units.")]
-        [SerializeField] private Vector2 worldOffset = new(0f, 0.15f);
+        [SerializeField] private Vector2 buttonSize = new(190f, 44f);
+        [Tooltip("Offset from the bottom center of the building sprite, in world units. The button hangs below this point.")]
+        [SerializeField] private Vector2 worldOffset = new(0f, 0.05f);
 
         private sealed class Entry
         {
@@ -48,11 +48,12 @@ namespace ResortEmpire.UI
         }
 
         /// <summary>Button label for <paramref name="offer"/>; <paramref name="seconds"/> is the time left of a running boost.</summary>
+        // Words instead of the ⚡ emoji: the emoji fades out on the orange button.
         public static string Label(Offer offer, int cost, int seconds) => offer switch
         {
-            Offer.Ready => $"Speed Up ⚡{cost}",
-            Offer.Boosted => $"⚡ {Mathf.Max(0, seconds)} s",
-            Offer.NeedEnergy => "Watch ad for ⚡",
+            Offer.Ready => $"Speed Up: {cost} Energy",
+            Offer.Boosted => $"Boosted: {Mathf.Max(0, seconds)} s",
+            Offer.NeedEnergy => "Ad for Energy",
             _ => string.Empty
         };
 
@@ -108,7 +109,9 @@ namespace ResortEmpire.UI
             var button = Instantiate(buttonPrefab, _layer);
             button.name = $"Boost {building.DisplayName}";
             var rect = (RectTransform)button.transform;
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+            // Hang below the building so the entrance and the queue stay visible.
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 1f);
             rect.sizeDelta = buttonSize;
 
             var label = button.GetComponentInChildren<TMP_Text>(true);

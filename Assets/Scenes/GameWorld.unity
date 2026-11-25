@@ -2722,8 +2722,8 @@ MonoBehaviour:
   boostSystem: {fileID: 779624771}
   buildingSystem: {fileID: 779624770}
   buttonPrefab: {fileID: 98887815978150877, guid: b86b14cde7876444c97ec6a1b2975135, type: 3}
-  buttonSize: {x: 200, y: 52}
-  worldOffset: {x: 0, y: 0.15}
+  buttonSize: {x: 190, y: 44}
+  worldOffset: {x: 0, y: 0.05}
 --- !u!114 &744083735
 MonoBehaviour:
   m_ObjectHideFlags: 0
