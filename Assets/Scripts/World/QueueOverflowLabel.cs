@@ -27,8 +27,12 @@ namespace ResortEmpire.World
             text.alignment = TextAlignmentOptions.Center;
             text.textWrappingMode = TextWrappingModes.NoWrap;
             text.color = TextColor;
-            text.outlineColor = OutlineColor;
-            text.outlineWidth = 0.3f;
+            // The outline makes a material instance, which leaks outside play mode (edit mode tests).
+            if (Application.isPlaying)
+            {
+                text.outlineColor = OutlineColor;
+                text.outlineWidth = 0.3f;
+            }
             text.rectTransform.sizeDelta = new Vector2(2f, 1f);
 
             // Same layer as the building and on top of the guests.
