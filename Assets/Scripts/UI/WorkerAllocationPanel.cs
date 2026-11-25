@@ -204,6 +204,8 @@ namespace ResortEmpire.UI
             if (!instance.TryGetComponent(out LayoutElement layout)) layout = instance.gameObject.AddComponent<LayoutElement>();
             layout.minHeight = upgradeButtonHeight;
             layout.preferredHeight = upgradeButtonHeight;
+            // The column controls widths without expanding them: stretch to the full column.
+            layout.flexibleWidth = 1f;
             // The prefab may not have run Awake yet when the sheet is still inactive.
             _upgradeButton = instance.GetComponent<Button>();
             _upgradeLabel = instance.GetComponentInChildren<TMP_Text>(true);
